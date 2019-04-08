@@ -25,24 +25,49 @@
  */
 
 module powerbi.extensibility.visual {
-    "use strict";
-    import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
+  "use strict";
+  import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
 
-    export class VisualSettings extends DataViewObjectsParser {
-      public dataPoint: dataPointSettings = new dataPointSettings();
-      }
+  export class VisualSettings extends DataViewObjectsParser {
+    public mapLayers: MapLayerSettings = new MapLayerSettings();
+    public sensor: SensorSettings = new SensorSettings();
+    public sensorLabel: SensorLabelSettings = new SensorLabelSettings();
+    public fromSensor: FromSensorSettings = new FromSensorSettings();
+    public toSensor: ToSensorSettings = new ToSensorSettings();
+    public tooltip: TooltipSettings = new TooltipSettings();
+  }
 
-    export class dataPointSettings {
-     // Default color
-      public defaultColor: string = "";
-     // Show all
-      public showAllDataPoints: boolean = true;
-     // Fill
-      public fill: string = "";
-     // Color saturation
-      public fillRule: string = "";
-     // Text Size
-      public fontSize: number = 12;
-     }
+  export class MapLayerSettings {
+    public type: string = "road";
+  }
 
+  export class SensorSettings {
+    public color: string = "01B8AA";
+    public showline: boolean = true;
+    public transparency: number = 50;
+  }
+
+  export class SensorLabelSettings {
+    public show: boolean = false;
+    public fontType: string = "helvetica, arial, sans-serif";
+    public fontSize: number = 10;
+    public fontColor: string = "#293537";
+    public textAlignment: string = "center";
+  }
+
+  export class FromSensorSettings {
+    public color: string = "0052FF";
+    public showline: boolean = true;
+    public transparency: number = 50;
+  }
+
+  export class ToSensorSettings {
+    public color: string = "3D68B8";
+    public showline: boolean = true;
+    public transparency: number = 50;
+  }
+
+  export class TooltipSettings {
+    public show: boolean = true;
+  }
 }

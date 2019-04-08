@@ -5,11 +5,24 @@
     "experimentalDecorators": true,
     "target": "ES5",
     "sourceMap": true,
-    "out": "./.tmp/build/visual.js"
+    "out": "./.tmp/build/visual.js",
+    "lib": ["dom", "es2015.promise", "es5"]
   },
   "files": [
     ".api/v2.3.0/PowerBI-visuals.d.ts",
-    "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts",
+    "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts",    
+    "src/bingmaps/initLibrary.ts",
+    "src/bingmaps/contextMenuService.ts", 
+    "src/bingmaps/mapController.ts", 
+    "src/bingmaps/nodeService.ts", 
+    "src/bingmaps/rgbColor.ts", 
+    "src/bingmaps/titleService.ts", 
+    "src/bingmaps/tooltipService.ts", 
+    "src/models/formatModel.ts",
+    "src/models/dataLabel.ts",
+    "src/models/columnView.ts",
+    "src/models/mapViewModel.ts",
+    "src/models/pointDataModel.ts",
     "src/settings.ts",
     "src/visual.ts"
   ]

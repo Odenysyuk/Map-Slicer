@@ -24,39 +24,91 @@
  *  THE SOFTWARE.
  */
 
+let mapctl: MapController;
+function init(div: HTMLDivElement, setting: MapViewModel[], format: VisualFormat) {
+    if (!mapctl) {
+    mapctl = new MapController(div, setting, format);
+  }
+  else {
+    mapctl.drawMap(setting, format);
+  }
+}
+
 module powerbi.extensibility.visual {
     "use strict";
     export class Visual implements IVisual {
-        private target: HTMLElement;
-        private updateCount: number;
-        private settings: VisualSettings;
-        private textNode: Text;
 
-        constructor(options: VisualConstructorOptions) {
-            console.log('Visual constructor', options);
-            this.target = options.element;
-            this.updateCount = 0;
-            if (typeof document !== "undefined") {
-                const new_p: HTMLElement = document.createElement("p");
-                new_p.appendChild(document.createTextNode("Update count:"));
-                const new_em: HTMLElement = document.createElement("em");
-                this.textNode = document.createTextNode(this.updateCount.toString());
-                new_em.appendChild(this.textNode);
-                new_p.appendChild(new_em);
-                this.target.appendChild(new_p);
-            }
+        private divMap: d3.Selection<HTMLElement>;
+        private viewModel: MapViewModel[];
+      //  private target: HTMLElement;
+        //private updateCount: number;
+        private visualSettings: VisualSettings;
+        private host: IVisualHost;
+        //private textNode: Text;
+
+        constructor(options: VisualConstructorOptions) {     
+            this.host = options.host;
+            this.divMap = d3.select(options.element)            
+                .append('div')
+                .classed('map', true)
+                .attr({ id: "map_id" });
+       //     console.log('Visual constructor', options);
+          //  this.target = options.element;
+            //this.updateCount = 0;
+            // if (typeof document !== "undefined") {
+            //     const new_p: HTMLElement = document.createElement("p");
+            //     new_p.appendChild(document.createTextNode("Update count:"));
+            //     const new_em: HTMLElement = document.createElement("em");
+            //     this.textNode = document.createTextNode(this.updateCount.toString());
+            //     new_em.appendChild(this.textNode);
+            //     new_p.appendChild(new_em);
+            //     this.target.appendChild(new_p);
+            // }
         }
 
         public update(options: VisualUpdateOptions) {
-            this.settings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
-            console.log('Visual update', options);
-            if (typeof this.textNode !== "undefined") {
-                this.textNode.textContent = (this.updateCount++).toString();
+
+            this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
+            try {
+               this.viewModel = this.getViewModel(options.dataViews);
+            } catch (e) {
+               console.error("Couldn't parse models", e)
             }
+            
+            init(this.divMap.node() as HTMLDivElement, this.viewModel, this.visualSettings);
+
+            // if (typeof this.textNode !== "undefined") {
+            //     this.textNode.textContent = (this.updateCount++).toString();
+            // }
         }
 
-        private static parseSettings(dataView: DataView): VisualSettings {
+        private static parseSettings(dataView: DataView): VisualSettings {  
             return VisualSettings.parse(dataView) as VisualSettings;
+        }
+
+        private getViewModel(dv: DataView[]): MapViewModel[] {
+            let viewModel: MapViewModel[] = [];
+
+            if (!dv || !dv[0] || !dv[0].table || !dv[0].table.columns || !dv[0].table.rows) {
+                return viewModel;
+            }
+
+            let columns = dv[0].table.columns;
+            let rows = dv[0].table.rows;
+            let columnIndexes: any = columns.map(c => { return { ...c.roles, index: c.index, fieldName: c.displayName }; });
+
+            for (let i = 0, len = rows.length; i < len; i++) {
+                let polyline = new MapViewModel();       
+                ColumnView.toArray().forEach(columnName => {
+                    var col = columnIndexes.find(x => x[columnName]);
+                    if (col) {
+                        polyline[columnName] = rows[i][col.index];   
+                        polyline.DataLabels.push(new DataLabel(columnName, col.fieldName, rows[i][col.index]));                     
+                    }
+                });
+                viewModel.push(polyline);
+            }
+            return viewModel;
         }
 
         /** 
@@ -65,7 +117,7 @@ module powerbi.extensibility.visual {
          * 
          */
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
-            return VisualSettings.enumerateObjectInstances(this.settings || VisualSettings.getDefault(), options);
+            return VisualSettings.enumerateObjectInstances(this.visualSettings || VisualSettings.getDefault(), options);
         }
     }
 }

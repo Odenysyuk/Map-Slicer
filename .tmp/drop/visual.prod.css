@@ -6,3 +6,42 @@
   background: yellow;
   padding: 5px;
 }
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .tooltiptext {
+  background-color: #2e1d1d;
+  opacity: 0.6;
+  color: #fff;
+  border-radius: 3px;
+  min-height: 30px;
+  min-width: 80px;
+  padding: 5px;
+  text-align: center;
+  vertical-align: middle;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #2e1d1d transparent transparent transparent;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-menu {
+  list-style-type: none;
+  margin-left: 40px;
+  padding-left: 0;
+  background-color: #f1f1f1;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-item a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-item a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-item a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}

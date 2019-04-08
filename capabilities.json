@@ -1,82 +1,288 @@
 {
     "dataRoles": [
         {
-            "displayName": "Category Data",
-            "name": "category",
+            "displayName": "Sensor Name",
+            "name": "SensorName",
             "kind": "Grouping"
         },
         {
-            "displayName": "Measure Data",
-            "name": "measure",
-            "kind": "Measure"
+            "displayName": "Location",
+            "name": "Location",
+            "kind": "Grouping"
         }
     ],
     "objects": {
-        "dataPoint": {
-            "displayName": "Data colors",
+        "mapLayers": {
+            "displayName": "Background Layers",
             "properties": {
-                "defaultColor": {
-                    "displayName": "Default color",
+                "type": {
+                    "displayName": "Map type",
+                    "description": "Select map type",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "Color",
+                                "value": "road"
+                            },
+                            {
+                                "displayName": "Light",
+                                "value": "canvasLight"
+                            },
+                            {
+                                "displayName": "Gray",
+                                "value": "grayscale"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "sensor": {
+            "displayName": "Sensor",
+            "properties": {
+                "color":{
+                    "displayName": "Default Color",
                     "type": {
                         "fill": {
                             "solid": {
-                                "color": true
+                                "color":true
                             }
                         }
                     }
                 },
-                "showAllDataPoints": {
-                    "displayName": "Show all",
+                "showline":{
+                    "displayName": "Show line",
                     "type": {
                         "bool": true
                     }
-                },
-                "fill": {
-                    "displayName": "Fill",
+                },             
+                "transparency": {
+                    "displayName": "Opacity",
+                    "description": "Select polygon opacity",
                     "type": {
-                        "fill": {
-                            "solid": {
-                                "color": true
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "sensorLabel":{
+            "displayName": "Sensor Label",
+            "properties": {
+                "show": {
+                    "displayName": "Turn on/off",
+                    "type": {"bool": true}
+                }, 
+                "fontType": {
+                    "displayName": "Font Type",
+                    "description": "Select font type",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "displayName": "Default",
+                                "description": "helvetica, arial, sans-serif",
+                                "value": "helvetica, arial, sans-serif"
+                            },
+                            {
+                                "displayName": "Arial",
+                                "value": "Arial"
+                            },
+                            {
+                                "displayName": "Arial Black",
+                                "value": "Arial Black, Gadget, sans-serif"
+                            },
+                            {
+                                "displayName": "Arial Unicode MS",
+                                "value": "Arial Unicode MS"
+                            },
+                            {
+                                "displayName": "Calibri",
+                                "value": "Calibri"
+                            },
+                            {
+                                "displayName": "Cambria",
+                                "value": "Cambria"
+                            },
+                            {
+                                "displayName": "Cambria Math",
+                                "value": "Cambria Math"
+                            },
+                            {
+                                "displayName": "Candara",
+                                "value": "Candara"
+                            },
+                            {
+                                "displayName": "Comic Sans MS",
+                                "value": "Comic Sans MS"
+                            },
+                            {
+                                "displayName": "Consolas",
+                                "value": "Consolas"
+                            },
+                            {
+                                "displayName": "Constantia",
+                                "value": "Constantia"
+                            },
+                            {
+                                "displayName": "Corbel",
+                                "value": "Corbel"
+                            },
+                            {
+                                "displayName": "Courier New",
+                                "value": "Courier New"
+                            },
+                            {
+                                "displayName": "Georgia",
+                                "value": "Georgia"
+                            },
+                            {
+                                "displayName": "Lucida Sans Unicode",
+                                "value": "Lucida Sans Unicode"
+                            },
+                            {
+                                "displayName": "Segoe (Bold)",
+                                "value": "Segoe UI Bold, wf_segoe-ui_bold, helvetica, arial, sans-serif"
+                            },
+                            {
+                                "displayName": "Segoe UI",
+                                "value": "Segoe UI, wf_segoe-ui_normal, helvetica, arial, sans-serif"
+                            },
+                            {
+                                "displayName": "Segoe UI Light",
+                                "value": "Segoe UI Light, wf_segoe-ui_bold, helvetica, arial, sans-serif"
+                            },
+                            {
+                                "displayName": "Symbol",
+                                "value": "Symbol"
+                            },
+                            {
+                                "displayName": "Tahoma",
+                                "value": "Tahoma"
+                            },
+                            {
+                                "displayName": "Times New Roman",
+                                "value": "Times New Roman"
+                            },
+                            {
+                                "displayName": "Trebuchet MS",
+                                "value": "Trebuchet MS"
+                            },
+                            {
+                                "displayName": "Verdana",
+                                "value": "Verdana"
                             }
-                        }
+                        ]
                     }
                 },
-                "fillRule": {
-                    "displayName": "Color saturation",
-                    "type": {
-                        "fill": {}
-                    }
-                },
-                 "fontSize": {
-                    "displayName": "Text Size",
+                "fontSize": {
+                    "displayName": "Font Size",
+                    "description": "Select font size",
                     "type": {
                         "formatting": {
                             "fontSize": true
                         }
                     }
+                },
+                "fontColor": {
+                    "displayName": "Font Color",
+                    "description": "Select font color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },            
+                "textAlignment": {
+                    "displayName": "Category Label Alignment",
+                    "description": "Select Category Label Alignment Left/Middle/Right",
+                    "type": {
+                        "formatting": {
+                            "alignment": true
+                        }
+                    }
+                }
+            }
+        },
+        "fromSensor": {
+            "displayName": "From",
+            "properties": {
+                "color":{
+                    "displayName": "Default Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }
+                    }
+                },
+                "showline":{
+                    "displayName": "Show line",
+                    "type": {
+                        "bool": true
+                    }
+                },             
+                "transparency": {
+                    "displayName": "Opacity",
+                    "description": "Select polygon opacity",
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "toSensor": {
+            "displayName": "To",
+            "properties": {
+                "color":{
+                    "displayName": "Default Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color":true
+                            }
+                        }
+                    }
+                },
+                "showline":{
+                    "displayName": "Show line",
+                    "type": {
+                        "bool": true
+                    }
+                },             
+                "transparency": {
+                    "displayName": "Opacity",
+                    "description": "Select polygon opacity",
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "tooltip":{
+            "displayName": "Tooltip",
+            "properties": {
+                "show": {
+                    "displayName": "Turn on/off",
+                    "type": {"bool": true}
                 }
             }
         }
     },
     "dataViewMappings": [
         {
-            "categorical": {
-                "categories": {
-                    "for": {
-                        "in": "category"
-                    },
-                    "dataReductionAlgorithm": {
-                        "top": {}
-                    }
-                },
-                "values": {
+            "table": {
+                "rows": {
                     "select": [
-                        {
-                            "bind": {
-                                "to": "measure"
-                            }
+                        {"for": {"in": "SensorName"}},
+                        {"for": {"in": "Location"}}
+                    ],
+                    "dataReductionAlgorithm": {
+                        "sample": {
+                            "count": 2000
                         }
-                    ]
+                    }
                 }
             }
         }

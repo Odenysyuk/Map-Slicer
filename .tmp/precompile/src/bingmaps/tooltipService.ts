@@ -1,0 +1,36 @@
+class TooltipService {
+
+    private tooltip: Microsoft.Maps.Infobox;
+    private tooltipTemplate: string;
+
+    constructor(map: Microsoft.Maps.Map) {
+        this.tooltip = new Microsoft.Maps.Infobox(map.getCenter(), {
+            visible: false,
+            showPointer: false,
+            showCloseButton: false,
+            offset: new Microsoft.Maps.Point(-75, 10)
+        });
+        this.tooltip.setMap(map);
+        this.tooltipTemplate = this.getTooltipTemplate();
+    }
+
+    async add(item: Microsoft.Maps.Pushpin, text: string) {
+        if(text && text !== ''){      
+            Microsoft.Maps.Events.addHandler(item, 'mouseover', e => {  
+                this.tooltip.setOptions({ visible: false });             
+                //Set the infobox options with the metadata of the pushpin.
+                this.tooltip.setOptions({
+                   location: (e as Microsoft.Maps.IMouseEventArgs).location,
+                   htmlContent:  this.tooltipTemplate.replace('{title}', text),
+                   visible: true
+                });    
+
+            });
+            Microsoft.Maps.Events.addHandler(item, 'mouseout', x => { this.tooltip.setOptions({ visible: false })});
+        }   
+    }
+
+    private getTooltipTemplate(): string {
+        return '<div class="tooltip"><span class="tooltiptext">{title}</span></div>';
+    }
+}

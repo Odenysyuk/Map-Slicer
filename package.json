@@ -6,6 +6,7 @@
     "@types/bingmaps": "0.0.1",
     "@types/d3": "^3.5.41",
     "bingmaps": "^2.0.3",
+    "bootstrap": "^4.3.1",
     "d3": "^3.5.5",
     "powerbi-visuals-utils-dataviewutils": "1.2.0"
   },
