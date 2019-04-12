@@ -4,11 +4,14 @@
   "description": "Map Slicer",
   "dependencies": {
     "@types/bingmaps": "0.0.1",
-    "@types/d3": "^3.5.41",
+    "@types/d3": "3.5.41",
     "bingmaps": "^2.0.3",
     "bootstrap": "^4.3.1",
-    "d3": "^3.5.5",
-    "powerbi-visuals-utils-dataviewutils": "1.2.0"
+    "d3": "3.5.5",
+    "powerbi-models": "1.1.0",
+    "powerbi-visuals-utils-dataviewutils": "1.2.0",
+    "powerbi-visuals-utils-formattingutils": "3.1.0",
+    "powerbi-visuals-utils-interactivityutils": "4.2.0"
   },
   "scripts": {
     "watch": "concurrent \"npm run tsc\" \"npm run pbi\"",

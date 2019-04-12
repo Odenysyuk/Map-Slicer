@@ -1,3 +1,65 @@
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG {
+  /*
+ *  Power BI Visualizations
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  All rights reserved.
+ *  MIT License
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the ""Software""), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+  /*
+ *  Power BI Visualizations
+ *
+ *  Copyright (c) Microsoft Corporation
+ *  All rights reserved.
+ *  MIT License
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the ""Software""), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ */
+  @import "node_modules/bootstrap/dist/css/bootstrap.css";
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .clearCatcher {
+  fill-opacity: 0;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .overflowingText {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
 .visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG p {
   font-size: 20px;
   font-weight: bold;
@@ -8,7 +70,7 @@
 }
 .visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .tooltiptext {
   background-color: #2e1d1d;
-  opacity: 0.6;
+  opacity: 0.9;
   color: #fff;
   border-radius: 3px;
   min-height: 30px;
@@ -16,14 +78,13 @@
   padding: 5px;
   text-align: center;
   vertical-align: middle;
-  border-width: 5px;
+  border-width: 10px;
   border-style: solid;
   border-color: #2e1d1d transparent transparent transparent;
 }
 .visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .tooltip {
   position: relative;
   display: inline-block;
-  border-bottom: 1px dotted black;
 }
 .visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-menu {
   list-style-type: none;
@@ -37,11 +98,61 @@
   padding: 8px 16px;
   text-decoration: none;
 }
-.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-item a.active {
-  background-color: #4CAF50;
-  color: white;
-}
 .visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-item a:hover:not(.active) {
   background-color: #555;
   color: white;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 17px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* On mouse-over, add a grey background color */
+  /* When the checkbox is checked, add a blue background */
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container .checkmark {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 15px;
+  width: 15px;
+  background-color: #eee;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container :hover input ~ .checkmark {
+  background-color: #ccc;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container input:checked ~ .checkmark {
+  background-color: #353636;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .checkbox-container .checkmark:after {
+  left: 5px;
+  top: 1px;
+  width: 3px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }

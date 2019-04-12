@@ -1,15 +1,33 @@
-class DataLabel{
-    public columnName: string;
-    public fieldName: string;
-    public value: any;
 
-    constructor(columnName: string, fieldName: string, value: any) {
-        this.columnName = columnName;
-        this.fieldName = fieldName;
-        this.value = value;
+module powerbi.extensibility.visual {
+
+    export class DataLabel {
+
+        private labels: IFiledLabel[] = [];
+
+        public push(item: IFiledLabel){
+            this.labels.push(item);
+        }
+
+        public toString(columnName: string) {
+            const data = this.labels.filter(x => x.columnName === columnName);
+
+            if (data.length) {
+                return data[0].fieldName + " : " + data[0].value.toString();
+            }
+            return '';
+        }
     }
-     
-    public toString = (): string => {
-        return this.fieldName + " : " + this.value.toString();
+
+    /**
+     * Interface for Field label
+     * 
+     * @interface
+     * @property {T} [key: string]  - key value
+     */
+    interface IFiledLabel {
+        columnName: string;
+        fieldName: string;
+        value: any;
     }
 }

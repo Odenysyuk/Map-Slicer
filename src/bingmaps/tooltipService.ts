@@ -1,36 +1,46 @@
-class TooltipService {
+module powerbi.extensibility.visual {
+    "use strict";
 
-    private tooltip: Microsoft.Maps.Infobox;
-    private tooltipTemplate: string;
+    export class TooltipService {
 
-    constructor(map: Microsoft.Maps.Map) {
-        this.tooltip = new Microsoft.Maps.Infobox(map.getCenter(), {
-            visible: false,
-            showPointer: false,
-            showCloseButton: false,
-            offset: new Microsoft.Maps.Point(-75, 10)
-        });
-        this.tooltip.setMap(map);
-        this.tooltipTemplate = this.getTooltipTemplate();
-    }
+        private tooltip: Microsoft.Maps.Infobox;
+        private tooltipTemplate: string;
 
-    async add(item: Microsoft.Maps.Pushpin, text: string) {
-        if(text && text !== ''){      
-            Microsoft.Maps.Events.addHandler(item, 'mouseover', e => {  
-                this.tooltip.setOptions({ visible: false });             
-                //Set the infobox options with the metadata of the pushpin.
-                this.tooltip.setOptions({
-                   location: (e as Microsoft.Maps.IMouseEventArgs).location,
-                   htmlContent:  this.tooltipTemplate.replace('{title}', text),
-                   visible: true
-                });    
-
+        constructor(map: Microsoft.Maps.Map) {
+            this.tooltip = new Microsoft.Maps.Infobox(map.getCenter(), {
+                visible: false,
+                showPointer: false,
+                showCloseButton: false,
+                offset: new Microsoft.Maps.Point(-75, 30)
             });
-            Microsoft.Maps.Events.addHandler(item, 'mouseout', x => { this.tooltip.setOptions({ visible: false })});
-        }   
-    }
+            this.tooltip.setMap(map);
+            this.tooltipTemplate = this.getTooltipTemplate();
+        }
 
-    private getTooltipTemplate(): string {
-        return '<div class="tooltip"><span class="tooltiptext">{title}</span></div>';
+        async add(sensorNode: SensorNodeModel) {
+
+            if(!sensorNode.data.dataLabels){
+                return;
+            }
+
+            const text = sensorNode.data.dataLabels.toString(ColumnView.sensorName);
+            if (text && text !== '') {
+                Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', e => {
+                    this.tooltip.setOptions({ visible: false });
+                    //Set the infobox options with the metadata of the pushpin.
+                    this.tooltip.setOptions({
+                        location: (e as Microsoft.Maps.IMouseEventArgs).location,
+                        htmlContent: this.tooltipTemplate.replace('{title}', text),
+                        visible: true
+                    });
+
+                });
+                Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseout', x => { this.tooltip.setOptions({ visible: false }) });
+            }
+        }
+
+        private getTooltipTemplate(): string {
+            return '<div class="tooltip"><span class="tooltiptext">{title}</span></div>';
+        }
     }
 }

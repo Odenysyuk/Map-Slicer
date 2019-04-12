@@ -23,91 +23,200 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-
-let mapctl: MapController;
-function init(div: HTMLDivElement, setting: MapViewModel[], format: VisualFormat) {
-    if (!mapctl) {
-    mapctl = new MapController(div, setting, format);
-  }
-  else {
-    mapctl.drawMap(setting, format);
-  }
-}
-
 module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
     "use strict";
-    export class Visual implements IVisual {
 
+    // export interface IFilter{
+    //     $schema: string;
+    //     target: IFilterTarget;
+    // }
+
+    export interface IBasicFilter extends IFilter {
+        operator: BasicFilterOperators;
+        values: (string | number | boolean)[];
+    }
+
+    import ISelectionId = powerbi.visuals.ISelectionId;
+
+    export class Visual implements IVisual {        
+        private map: Microsoft.Maps.Map;
         private divMap: d3.Selection<HTMLElement>;
-        private viewModel: MapViewModel[];
-      //  private target: HTMLElement;
-        //private updateCount: number;
+        private viewModel: SlicerMapModel[];
         private visualSettings: VisualSettings;
-        private host: IVisualHost;
-        //private textNode: Text;
+        private host: powerbi.extensibility.visual.IVisualHost;
+        private selectionIdBuilder: ISelectionIdBuilder;
+        private selectionManager: ISelectionManager;
+        private loadedMap: boolean;
+        private mapController: BingMapController;
 
-        constructor(options: VisualConstructorOptions) {     
+        constructor(options: VisualConstructorOptions) {  
             this.host = options.host;
+            this.selectionIdBuilder = options.host.createSelectionIdBuilder();
+            this.selectionManager = options.host.createSelectionManager();
+          //  this.mapController = new BingMapController(this.selectionManager);
+            
             this.divMap = d3.select(options.element)            
                 .append('div')
                 .classed('map', true)
-                .attr({ id: "map_id" });
-       //     console.log('Visual constructor', options);
-          //  this.target = options.element;
-            //this.updateCount = 0;
-            // if (typeof document !== "undefined") {
-            //     const new_p: HTMLElement = document.createElement("p");
-            //     new_p.appendChild(document.createTextNode("Update count:"));
-            //     const new_em: HTMLElement = document.createElement("em");
-            //     this.textNode = document.createTextNode(this.updateCount.toString());
-            //     new_em.appendChild(this.textNode);
-            //     new_p.appendChild(new_em);
-            //     this.target.appendChild(new_p);
-            // }
+                .attr({ id: "map_id" });  
+
+            const data = ['From', 'To'];
+            
+            let row =   d3.select(options.element)
+                          .append('div')
+                          .classed('row', true)
+                          .attr({ id: "container" }); ;  
+
+            var checkBoxesData = row.selectAll(".checkboxes")
+                                .append("label")
+                                .classed('row', true)
+                                .data(data)
+
+            var checkBoxes = checkBoxesData
+                                .enter()
+                                .append("label")
+                                .classed('checkbox-container', true)
+                                .text(function(d) {
+                                    return d;
+                                });
+
+            checkBoxes.append("input")       
+                      .attr("type", "checkbox")
+                      .attr("checked", "checked");
+
+            checkBoxes.append("span").classed('checkmark', true);
+
+
+            data.pop();
+            checkBoxesData.exit().remove();
+         
+    
+
+            let column = row.append('ul')
+
+            // d3.select(options.element)
+            //   .append('div')
+            //   .selectAll("div")
+            //   .data(data)
+            //     .enter()
+            //     .append('div')         
+            //     .style("width", function(d) { return "10 px"; })
+            //     .text(function(d) { return '$ ' + d; });
+
+            this.loadedMap = false;
         }
 
-        public update(options: VisualUpdateOptions) {
+        public update(options: VisualUpdateOptions) { 
+            //this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
 
-            this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
-            try {
-               this.viewModel = this.getViewModel(options.dataViews);
-            } catch (e) {
-               console.error("Couldn't parse models", e)
-            }
+            // if(!this.loadedMap){
+            //     BingMapsLoader.load(this.divMap.node() as HTMLDivElement, this.visualSettings)
+            //     .then(res => { 
+            //         this.map =  res as Microsoft.Maps.Map;
+            //         this.loadedMap = true;
+            //         this.mapController.setMap(this.map);
+            //         this.drawMap(options);   
+            //     });
+            //     return;
+            // }    
             
-            init(this.divMap.node() as HTMLDivElement, this.viewModel, this.visualSettings);
+            // this.drawMap(options);         
+        }    
 
-            // if (typeof this.textNode !== "undefined") {
-            //     this.textNode.textContent = (this.updateCount++).toString();
-            // }
+        private drawMap(options: VisualUpdateOptions) {
+            try {
+                this.viewModel = this.converter(options.dataViews, this.host);
+            }
+            catch (e) {
+                console.error("Couldn't parse models", e);
+            }
+            this.mapController.drawMap(this.viewModel, this.visualSettings);
+
+            // let selectionId = this.viewModel[0].selectionId;
+            // let selectionManager = this.selectionManager;
+
+            // this.selectionManager.select(selectionId).then((ids: ISelectionId[]) => {
+            //     //called when setting the selection has been completed successfully
+            // });
+
+            // let categories =  options.dataViews[0].table.columns[0];
+         
+
+            //  let target =  {
+            //     column: categories.displayName,
+            //     table: categories.queryName.substr(0, categories.queryName.indexOf('.')),
+            // };
+    
+            // debugger;
+            // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [1038]);
+            // this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
+
+            // this.divMap.on('click', () => {
+           
+            //     selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
+            //                 console.log(ids);
+            //              }).catch(e => console.error(e))
+
+
+            // });
+            // Microsoft.Maps.Events.addHandler(this.map, 'click', function (e: Microsoft.Maps.IMouseEventArgs)  {
+            //     debugger;
+            //     console.log('marker identity is ', selectionId);
+            //     debugger;
+            //     selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
+            //         console.log(ids);
+            //     }).catch(e => console.error(e));                     
+            // });          
         }
 
         private static parseSettings(dataView: DataView): VisualSettings {  
             return VisualSettings.parse(dataView) as VisualSettings;
         }
 
-        private getViewModel(dv: DataView[]): MapViewModel[] {
-            let viewModel: MapViewModel[] = [];
+        private converter(dv: DataView[], host: IVisualHost): SlicerMapModel[] {
+            let viewModel: SlicerMapModel[] = [];
 
             if (!dv || !dv[0] || !dv[0].table || !dv[0].table.columns || !dv[0].table.rows) {
                 return viewModel;
             }
 
-            let columns = dv[0].table.columns;
-            let rows = dv[0].table.rows;
+            const { columns, rows } = dv[0].table;
             let columnIndexes: any = columns.map(c => { return { ...c.roles, index: c.index, fieldName: c.displayName }; });
 
-            for (let i = 0, len = rows.length; i < len; i++) {
-                let polyline = new MapViewModel();       
+            const identities = this.getSelectionIds(dv[0], host);
+        
+            viewModel = rows.map(function (row, idx) {
+                let data = {}
+                let dataLabels = new DataLabel();
                 ColumnView.toArray().forEach(columnName => {
                     var col = columnIndexes.find(x => x[columnName]);
                     if (col) {
-                        polyline[columnName] = rows[i][col.index];   
-                        polyline.DataLabels.push(new DataLabel(columnName, col.fieldName, rows[i][col.index]));                     
+                        data[columnName] = row[col.index];
+
+                        dataLabels.push({
+                            columnName: columnName,
+                            fieldName: col.fieldName,
+                            value: row[col.index]
+                        });
                     }
                 });
-                viewModel.push(polyline);
-            }
+
+                data['dataLabels'] = dataLabels;
+
+            
+                const categoryColumn: DataViewCategoryColumn = {
+                    source: dv[0].table.columns[1],
+                    values: null,
+                    identity: [dv[0].table.identity[idx]]
+                };
+
+            
+                data['selectionId'] = identities[idx];
+
+                return data as SlicerMapModel;
+            })
+
+            debugger;
             return viewModel;
         }
 
@@ -119,5 +228,19 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstance[] | VisualObjectInstanceEnumerationObject {
             return VisualSettings.enumerateObjectInstances(this.visualSettings || VisualSettings.getDefault(), options);
         }
-    }
+
+        private getSelectionIds(dataView: DataView, host: IVisualHost): ISelectionId[] {
+            return dataView.table.identity.map((identity, idx) => {
+                const categoryColumn: DataViewCategoryColumn = {
+                    source: dataView.table.columns[0],
+                    values: null,
+                    identity: [identity]
+                };
+        
+                return host.createSelectionIdBuilder()
+                    .withCategory(categoryColumn, 0)
+                    .createSelectionId();
+            });
+        }
+    }        
 }

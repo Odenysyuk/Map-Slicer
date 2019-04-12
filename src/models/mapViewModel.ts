@@ -1,5 +1,5 @@
 class MapViewModel {
     public SensorName: string = "";
     public Location: string = "";
-    public DataLabels: DataLabel[] = [];
+    public DataLabels: any[];
 }

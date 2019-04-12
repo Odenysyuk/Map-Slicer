@@ -29,23 +29,24 @@ class ContextMenuService{
                 });               
             }
         });
-    }
 
+        Microsoft.Maps.Events.addHandler(map, 'click', e => {
+            this.contextMenu.setOptions({ visible: false });
+            var event = (e as Microsoft.Maps.IMouseEventArgs);
 
-    public add(data: PointDataModel){
-        
+            var shape = event.primitive;
+            if (shape instanceof Microsoft.Maps.Pushpin) {
+                console.log('Pushpin right clicked');
 
-        // Microsoft.Maps.Events.addHandler(data.point, 'rightclick', e => {  
-        //     // this.tooltip.setOptions({ visible: false });             
-        //     // //Set the infobox options with the metadata of the pushpin.
-        //     // this.tooltip.setOptions({
-        //     //    location: (e as Microsoft.Maps.IMouseEventArgs).location,
-        //     //    visible: true
-        //     // });   
-        //     console.log(e);
-
-        // });
-
+                //Set the infobox options with the metadata of the pushpin.
+                this.contextMenu.setOptions({
+                    location: event.location,
+                    visible: true
+                });     
+                
+                const sensorOperation = new SensorFilterOperation();
+            }
+        }); 
     }
 
     private getTooltipTemplate(): string {
@@ -53,9 +54,33 @@ class ContextMenuService{
     }
 
     private getTooltipTemplate1(): string {
-        return '<ul class="context-menu"> '+ 
-        '<li class="context-item"><a>From</a></li>'+
-        '<li class="context-item"><a>To</a></li>'+
-        '</ul>';
+        return `<ul class="context-menu">            
+                    <li class="context-item" id="setFromBtn"><i class="fa fa-home"></i><a onclick="getTrainingName(923)">From</a></li>         
+                    <li class="context-item" id="setToBtn"><a><i class="fa fa-home"></i>To</a></li>
+                </ul>`;
     }
 }
+
+class SensorFilterOperation{
+    private setFromBtn: HTMLElement;
+    private setToBtn: HTMLElement
+    constructor(){
+        debugger;
+        this.setFromBtn = document.getElementById("setFromBtn");  
+        if(  this.setFromBtn )   {
+            this.setFromBtn.addEventListener("click", (e:Event) => this.getTrainingName(4));
+        }
+
+        this.setToBtn = document.getElementById("setToBtn");
+        if(this.setToBtn){
+            this.setToBtn.addEventListener("click", (e:Event) => this.getTrainingName(4));
+        }
+    }
+
+    getTrainingName(n:number){
+        console.log(n);
+        // button click handler
+     }
+}
+
+
