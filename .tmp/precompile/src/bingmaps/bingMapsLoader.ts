@@ -40,6 +40,7 @@ class BingMapsLoader {
             showDashboard: false,
             showTermsLink: false,
             showLogo: false,
+            showScalebar: false,
             mapTypeId: this.mapType(fm.mapLayers),
             liteMode: false
         } as Microsoft.Maps.IMapLoadOptions;

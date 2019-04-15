@@ -17,7 +17,7 @@ module powerbi.extensibility.visual {
 
         private offScreenCanvas: any;
 
-        async draw(node: SlicerMapModel, format: SensorLabelSettings): Promise<Microsoft.Maps.Pushpin> {
+        async draw(node: NodeModel, format: SensorLabelSettings): Promise<Microsoft.Maps.Pushpin> {
             if(format.show){
                 return this.createLabelPushpin(node, this.nodeSizeDefault, format);
             }
@@ -46,10 +46,10 @@ module powerbi.extensibility.visual {
                 .replace('{fontFamily}', fontFamily);
         }
 
-        private createLabelPushpin(node: SlicerMapModel, size: number, format: SensorLabelSettings): Microsoft.Maps.Pushpin {
-            const point = Microsoft.Maps.WellKnownText.read(node.sensor) as Microsoft.Maps.Pushpin;
+        private createLabelPushpin(node: NodeModel, size: number, format: SensorLabelSettings): Microsoft.Maps.Pushpin {
+            const point = Microsoft.Maps.WellKnownText.read(`${node.value}`) as Microsoft.Maps.Pushpin;
             const location = point.getLocation() as Microsoft.Maps.Location;
-            const text = node.sensorName.toString();
+            const text = node.category.toString();
             let textColor = format.fontColor || this.textColorDefault;
             let fontSize = format.fontSize || this.fontSizeDefault;
             let fontFamily = format.fontType || this.fontFamilyDefault;

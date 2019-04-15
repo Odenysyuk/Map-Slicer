@@ -36,7 +36,8 @@
     "src/models/sensorNodeModel.ts",
     "src/models/slicerMapModel.ts",
     "src/selectionBehavior.ts",
-    "src/settings.ts",
+    "src/settings.ts",  
+    "src/categoryConverter.ts",
     "src/visual.ts"
   ]
 }

@@ -19,11 +19,11 @@ module powerbi.extensibility.visual {
 
         async add(sensorNode: SensorNodeModel) {
 
-            if(!sensorNode.data.dataLabels){
+            if(!sensorNode.data.category){
                 return;
             }
 
-            const text = sensorNode.data.dataLabels.toString(ColumnView.sensorName);
+            const text = sensorNode.data.category.toString();
             if (text && text !== '') {
                 Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', e => {
                     this.tooltip.setOptions({ visible: false });

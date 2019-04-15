@@ -1,34 +1,14 @@
 {
     "dataRoles": [
         {
-            "displayName": "Sensor Name",
-            "name": "sensorName",
+            "displayName": "Node names",
+            "name": "nodeNames",
             "kind": "Grouping"
-        },
+        },    
         {
-            "displayName": "Sensor",
-            "name": "sensor",
-            "kind": "Grouping"
-        },   
-        {
-            "displayName": "From Name",
-            "name": "fromName",
-            "kind": "Grouping"
-        },   
-        {
-            "displayName": "From",
-            "name": "fromSensor",
-            "kind": "Grouping"
-        },     
-        {
-            "displayName": "To Name",
-            "name": "toName",
-            "kind": "Grouping"
-        },     
-        {
-            "displayName": "To",
-            "name": "toSensor",
-            "kind": "Grouping"
+            "displayName": "Node values",
+            "name": "nodeValues",
+            "kind": "Measure"
         }
     ],
     "objects": {
@@ -309,47 +289,17 @@
     },
     "dataViewMappings": [
         {
-            "conditions": [
-                {
-                    "sensorName": {
-                        "max": 1
-                    },
-                    "sensor": {
-                        "max": 1
-                    },
-                    "fromName": {
-                        "min": 0,
-                        "max": 1
-                    },
-                    "fromSensor": {
-                        "min": 0,
-                        "max": 1
-                    },
-                    "toName": {
-                        "min": 0,
-                        "max": 1
-                    },
-                    "toSensor": {
-                        "min": 0,
-                        "max": 1
-                    }
-                }
-            ],
-            "table": {
-                "rows": {
+            "categorical": {
+                "categories": {
+                    "for": {"in": "nodeNames"},
+                    "dataReductionAlgorithm": {"sample": {"count": 2000}}
+                },
+                "values": {
                     "select": [
-                        {"bind": {"to": "sensorName"}},
-                        {"bind": {"to": "sensor"}},
-                        {"bind": {"to": "fromName"}},
-                        {"bind": {"to": "fromSensor"}},
-                        {"bind": {"to": "toName"}},
-                        {"bind": {"to": "toSensor"}}
-                    ],
-                    "dataReductionAlgorithm": {
-                        "sample": {
-                            "count": 2000
+                        {
+                            "for": {"in": "nodeValues"}
                         }
-                    }
+                    ]
                 }
             }
         }

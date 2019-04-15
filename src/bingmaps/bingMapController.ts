@@ -28,7 +28,7 @@ module powerbi.extensibility.visual {
             this.tooltipService = new TooltipService(map);
         }
 
-        public drawMap(data: SlicerMapModel[], format: VisualSettings) {
+        public drawMap(data: NodeModel[], format: VisualSettings) {
             if (Microsoft.Maps.WellKnownText) {
                 return this.reDrawMap(data, format);
             }
@@ -39,7 +39,7 @@ module powerbi.extensibility.visual {
             }
         }
 
-        async reDrawMap(data: SlicerMapModel[], format: VisualSettings) {
+        async reDrawMap(data: NodeModel[], format: VisualSettings) {
             await this.resetMap();
             await Promise.all([
                 this.mapType.restyleMap(this.map, format.mapLayers),
@@ -52,11 +52,11 @@ module powerbi.extensibility.visual {
             this.map.entities.clear();
         }
 
-        async drawSensors(data: SlicerMapModel[], format: VisualSettings) {
+        async drawSensors(data: NodeModel[], format: VisualSettings) {
             this.sensorNodeModels = await Promise.all(data.map(sensorData => this.drawSensor(sensorData, format, this.map)));
         }
 
-        async drawSensor(sensorData: SlicerMapModel, format: VisualSettings, map: Microsoft.Maps.Map) {
+        async drawSensor(sensorData: NodeModel, format: VisualSettings, map: Microsoft.Maps.Map) {
             let node = null;
             let label = null;
             let tooltip = null;
@@ -71,15 +71,15 @@ module powerbi.extensibility.visual {
             }
 
             const sensorNode = {
-                data: sensorData,
-                label: label,
-                node: node,
-                tooltip: tooltip
+                 data: sensorData,
+                 label: label,
+                 node: node,
+                 tooltip: tooltip
             } as SensorNodeModel;
 
-            if (format.tooltip.show) {
-                await this.tooltipService.add(sensorNode);
-            }
+            // if (format.tooltip.show) {
+            //     await this.tooltipService.add(sensorNode);
+            // }
 
             // let selectionManager =  this.selectionManager;
             // debugger;

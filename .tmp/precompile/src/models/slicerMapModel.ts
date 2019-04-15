@@ -24,5 +24,15 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         toSensor:string;
         dataLabels: DataLabel;
         selectionId: ISelectionId;
-    }    
+    } 
+    
+    export interface NodeModel {
+        category: PrimitiveValue;
+        value: PrimitiveValue;
+    }  
+
+    export interface NodeSlicerModel {
+        nodes: NodeModel[];
+        selectionId: ISelectionId;
+    } 
 }

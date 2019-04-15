@@ -10,7 +10,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             this.svgSize = 10;
         }
         
-        async drawCircleNode(dataView: SlicerMapModel, format: SensorFormat): Promise<Microsoft.Maps.Pushpin>  {
+        async drawCircleNode(dataView: NodeModel, format: SensorFormat): Promise<Microsoft.Maps.Pushpin>  {
             const gradientColor = RgbColor.hexToRgb(format.color, format.transparency / 100).toString();
             const gradientColorLine = format.showline ? RgbColor.hexToRgb(format.color, 1).toString() : gradientColor;
             const circle = this.CreateCircle(gradientColor, gradientColorLine);
@@ -18,8 +18,8 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             return this.CreatePushpin(dataView, circle);
         }
 
-        private CreatePushpin(node: SlicerMapModel, svg: string): Microsoft.Maps.Pushpin {
-            const point = Microsoft.Maps.WellKnownText.read(node.sensor) as Microsoft.Maps.Pushpin;
+        private CreatePushpin(node: NodeModel, svg: string): Microsoft.Maps.Pushpin {
+            const point = Microsoft.Maps.WellKnownText.read(`${node.value}`) as Microsoft.Maps.Pushpin;
             if (point) {
                 point.setOptions({
                     icon: svg,
