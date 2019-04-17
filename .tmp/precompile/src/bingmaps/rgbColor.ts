@@ -27,5 +27,20 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                 alpha
             ) : null;
         }
+
+        static pickHex(hex: string): RgbColor {
+            const color1 = RgbColor.hexToRgb(hex, 1);
+            const color2 = RgbColor.hexToRgb("#374649", 1);
+            var p = 0.64;
+            var w = p * 2 - 1;
+            var w1 = (w / 1 + 1) / 2;
+            var w2 = 1 - w1;
+            return new RgbColor(
+                Math.round(color1.Red * w1 + color2.Red * w2),
+                Math.round(color1.Green * w1 + color2.Green * w2),
+                Math.round(color1.Blue * w1 + color2.Blue * w2),
+                1
+            );
+        }
     }
 }

@@ -5,13 +5,17 @@
   "dependencies": {
     "@types/bingmaps": "0.0.1",
     "@types/d3": "3.5.41",
+    "@types/jquery": "^3.3.29",
     "bingmaps": "^2.0.3",
-    "bootstrap": "^4.3.1",
+    "bootstrap": "4.2.1",
     "d3": "3.5.5",
+    "jquery": "3.3.1",
+    "popper.js": "1.14.6",
     "powerbi-models": "1.1.0",
     "powerbi-visuals-utils-dataviewutils": "1.2.0",
     "powerbi-visuals-utils-formattingutils": "3.1.0",
-    "powerbi-visuals-utils-interactivityutils": "4.2.0"
+    "powerbi-visuals-utils-interactivityutils": "4.2.0",
+    "powerbi-visuals-utils-tooltiputils": "^1.1.1"
   },
   "scripts": {
     "watch": "concurrent \"npm run tsc\" \"npm run pbi\"",

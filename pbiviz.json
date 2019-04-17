@@ -28,8 +28,13 @@
     "node_modules/powerbi-visuals-utils-typeutils/lib/index.js",
     "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.js",
     "node_modules/powerbi-visuals-utils-formattingutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-tooltiputils/lib/index.js",
     "node_modules/powerbi-models/dist/models.js",
-    "node_modules/bingmaps/index.js"
+    "node_modules/jquery/dist/jquery.slim.js",
+    "node_modules/popper.js/dist/umd/popper.js",
+    "node_modules/bootstrap/dist/js/bootstrap.js",
+    "node_modules/bingmaps/index.js",
+    "src/libraries/initFontAwesome.js"
   ],
   "style": "style/visual.less",
   "capabilities": "capabilities.json",

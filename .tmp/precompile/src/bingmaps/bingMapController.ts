@@ -14,18 +14,20 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         private titleService: TitleSevice;
         private tooltipService: TooltipService;
         private sensorNodeModels: SensorNodeModel[];
+        private contextMenu: ContextMenuService;
 
         constructor(selectionManager: ISelectionManager) {
             this.selectionManager = selectionManager;
             this.nodeService = new NodeService();
             this.mapType = new MapTypeService();
-            this.titleService = new TitleSevice();
+            this.titleService = new TitleSevice();      
             this.sensorNodeModels = [];
         }
 
         public setMap(map: Microsoft.Maps.Map) {
             this.map = map;
             this.tooltipService = new TooltipService(map);
+            this.contextMenu = new ContextMenuService(this.map);
         }
 
         public drawMap(data: NodeModel[], format: VisualSettings) {
@@ -57,6 +59,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         }
 
         async drawSensor(sensorData: NodeModel, format: VisualSettings, map: Microsoft.Maps.Map) {
+           
             let node = null;
             let label = null;
             let tooltip = null;
@@ -82,7 +85,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             // }
 
             // let selectionManager =  this.selectionManager;
-            // debugger;
+             debugger;
 
             // this.selectionManager.registerOnSelectCallback(
             // (ids: ISelectionId[]) => {
@@ -92,7 +95,6 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
             // Microsoft.Maps.Events.addHandler(node, 'click', function (e: Microsoft.Maps.IMouseEventArgs)  {
             //     console.log('marker identity is ', sensorData.selectionId);
-            //     debugger;
             //     selectionManager.select(sensorData.selectionId, false).then((ids: ISelectionId[]) =>{
             //         console.log(ids);
             //     }).catch(e => console.error(e));                     

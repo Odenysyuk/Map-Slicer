@@ -1,6 +1,6 @@
 @import (less) "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
 @import (less) "node_modules/powerbi-visuals-utils-formattingutils/lib/index.css";
-@import (css) "node_modules/bootstrap/dist/css/bootstrap.css";
+@import (less) "node_modules/bootstrap/dist/css/bootstrap.css";
 
 @contexeMenuBackground: #f1f1f1;
 @contextItemBackground: #000;
@@ -28,7 +28,7 @@ p {
     border-width: 10px;
     border-style: solid;
     border-color: #2e1d1d transparent transparent transparent;
-  }
+}
 
   .tooltip {
     position: relative;
@@ -116,3 +116,88 @@ p {
       transform: rotate(45deg);
     }
   }
+
+.checkbox-group {
+    display: block;
+    margin-bottom: 0px;
+
+    input {
+      padding: 0;
+      height: initial;
+      width: initial;
+      margin-bottom: 0;
+      display: none;
+      cursor: pointer;
+    }
+
+    label {
+      position: relative;
+      cursor: pointer;
+    }
+
+    label:before {
+      content:'';
+      -webkit-appearance: none;
+      background-color: transparent;
+      border: 1px solid #080808;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
+      padding: 5px;
+      display: inline-block;
+      position: relative;
+      vertical-align: middle;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+
+    input:checked + label:after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 5px;
+      left: 4px;
+      width: 5px;
+      height: 8px;
+      border: solid #212324;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }  
+}
+.col {
+  padding: 0px;
+}
+
+.container {
+  margin: 0px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+.list-group-item {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.dropdown-menu {
+  position: static;
+  display: block;
+  min-width: 5rem;
+  background-color: rgba(199, 199, 199, 0.92);
+  border: 1px solid #9d9797;
+  border-radius: 0.25rem;
+  padding: 0px;
+
+  .dropdown-item {
+    padding: 0.25rem 0.5rem;
+    color: #373738;
+  }  
+}
+
+.dropdown-item.active, .dropdown-item:active {
+  color: #373738;
+  background-color: rgba(199, 199, 199, 0.92);
+}
+
+.dropdown-item:focus {
+  color: #373738;
+  background-color: rgba(199, 199, 199, 0.92);
+}

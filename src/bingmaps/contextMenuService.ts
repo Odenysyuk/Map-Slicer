@@ -8,7 +8,7 @@ class ContextMenuService{
             visible: false,
             showPointer: false,
             showCloseButton: false,
-            htmlContent: this.getTooltipTemplate1(),
+            htmlContent: this.getTooltipTemplate(),
             offset: new Microsoft.Maps.Point(-75, 10)
         });
 
@@ -28,36 +28,16 @@ class ContextMenuService{
                     visible: true
                 });               
             }
-        });
-
-        Microsoft.Maps.Events.addHandler(map, 'click', e => {
-            this.contextMenu.setOptions({ visible: false });
-            var event = (e as Microsoft.Maps.IMouseEventArgs);
-
-            var shape = event.primitive;
-            if (shape instanceof Microsoft.Maps.Pushpin) {
-                console.log('Pushpin right clicked');
-
-                //Set the infobox options with the metadata of the pushpin.
-                this.contextMenu.setOptions({
-                    location: event.location,
-                    visible: true
-                });     
-                
-                const sensorOperation = new SensorFilterOperation();
-            }
-        }); 
+        });  
     }
 
     private getTooltipTemplate(): string {
-        return '<div style="background-color:gray;border:1px solid black;padding:10px;"><input type="button" value="zoom in" onclick="map.setView({zoom: map.getZoom() + 1});closeContextMenu();"/></div>';
-    }
-
-    private getTooltipTemplate1(): string {
-        return `<ul class="context-menu">            
-                    <li class="context-item" id="setFromBtn"><i class="fa fa-home"></i><a onclick="getTrainingName(923)">From</a></li>         
-                    <li class="context-item" id="setToBtn"><a><i class="fa fa-home"></i>To</a></li>
-                </ul>`;
+        return `  
+        <div class="dropdown-menu">
+            <a class="dropdown-item" onclick ="getTrainingName(1)"><i class="far fa-circle"></i> From</a>
+            <a class="dropdown-item"><i class="fas fa-play"></i> To</a>
+        </div>
+        `;
     }
 }
 
@@ -83,4 +63,6 @@ class SensorFilterOperation{
      }
 }
 
-
+function getTrainingName(){
+    console.log("getTrainingName");
+}

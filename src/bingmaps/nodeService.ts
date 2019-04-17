@@ -12,7 +12,7 @@ module powerbi.extensibility.visual {
         
         async drawCircleNode(dataView: NodeModel, format: SensorFormat): Promise<Microsoft.Maps.Pushpin>  {
             const gradientColor = RgbColor.hexToRgb(format.color, format.transparency / 100).toString();
-            const gradientColorLine = format.showline ? RgbColor.hexToRgb(format.color, 1).toString() : gradientColor;
+            const gradientColorLine = format.showline ? RgbColor.pickHex(format.color).toString() : gradientColor;
             const circle = this.CreateCircle(gradientColor, gradientColorLine);
 
             return this.CreatePushpin(dataView, circle);

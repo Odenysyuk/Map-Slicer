@@ -18,7 +18,11 @@ module powerbi.extensibility.visual {
 
             for (let c = 0; c < categories.length; c++) {
                 const category = categories[c];
-                const dataValue = values[c];
+                const dataValue = values[c];    
+
+                if(!dataValue){
+                    continue;
+                }
 
                 for (let i = 0, len = Math.max(category.values.length, dataValue.values.length); i < len; i++) {
                     const model = {
@@ -38,6 +42,18 @@ module powerbi.extensibility.visual {
             }
 
             return models;
+        }
+
+        public static ConvertCategoryNames(dataView: DataView, host: IVisualHost) {
+            if (!dataView ||
+                !dataView.categorical ||
+                !dataView.categorical.categories ||
+                !dataView.categorical.categories[0] ||
+                !dataView.categorical.categories[0].source) {
+                return;
+            }
+
+            return dataView.categorical.categories.map(c => c.source.displayName);  
         }
 
         public static ConvertTableToModel(dv: DataView[], host: IVisualHost): SlicerMapModel[] {
@@ -82,8 +98,7 @@ module powerbi.extensibility.visual {
 
                 return data as SlicerMapModel;
             })
-
-            debugger;
+            
             return viewModel;
         }
 

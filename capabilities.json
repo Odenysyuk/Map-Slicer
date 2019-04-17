@@ -289,6 +289,14 @@
     },
     "dataViewMappings": [
         {
+            "conditions": [{
+                "nodeNames": {
+                    "max": 2
+                },
+                "nodeValues": {
+                    "max": 2
+                }
+            }],
             "categorical": {
                 "categories": {
                     "for": {"in": "nodeNames"},

@@ -19,6 +19,7 @@
     "node_modules/powerbi-visuals-utils-svgutils/lib/index.d.ts",
     "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.d.ts",
     "node_modules/powerbi-models/dist/models-noexports.d.ts",
+    "node_modules/powerbi-visuals-utils-tooltiputils/lib/index.d.ts",
     "src/bingmaps/bingMapsLoader.ts",
     "src/bingmaps/bingMapController.ts",
     "src/bingmaps/mapTypeService.ts",
@@ -38,6 +39,7 @@
     "src/selectionBehavior.ts",
     "src/settings.ts",  
     "src/categoryConverter.ts",
+    "src/tooltipServiceWrapper.ts",
     "src/visual.ts"
   ]
 }
