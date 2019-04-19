@@ -30,10 +30,10 @@ module powerbi.extensibility.visual {
 
   export class VisualSettings extends DataViewObjectsParser {
     public mapLayers: MapLayerSettings = new MapLayerSettings();
-    public sensor: SensorSettings = new SensorSettings();
+    public sensor: SensorSettings = new SensorSettings("01B8AA", true, 50);
     public sensorLabel: SensorLabelSettings = new SensorLabelSettings();
-    public fromSensor: FromSensorSettings = new FromSensorSettings();
-    public toSensor: ToSensorSettings = new ToSensorSettings();
+    public fromSensor: SensorSettings = new SensorSettings("0052FF", true, 50);
+    public toSensor: SensorSettings  = new SensorSettings("3D68B8", true, 50);
     public tooltip: TooltipSettings = new TooltipSettings();
   }
 
@@ -45,6 +45,11 @@ module powerbi.extensibility.visual {
     public color: string = "01B8AA";
     public showline: boolean = true;
     public transparency: number = 50;
+    constructor(color: string, showline: boolean, transparency: number) {
+      this.color = color; 
+      this.showline = showline;
+      this.transparency = transparency;
+    }
   }
 
   export class SensorLabelSettings {
@@ -55,17 +60,17 @@ module powerbi.extensibility.visual {
     public textAlignment: string = "center";
   }
 
-  export class FromSensorSettings {
-    public color: string = "0052FF";
-    public showline: boolean = true;
-    public transparency: number = 50;
-  }
+  // export class SensorSettings {
+  //   public color: string = "0052FF";
+  //   public showline: boolean = true;
+  //   public transparency: number = 50;
+  // }
 
-  export class ToSensorSettings {
-    public color: string = "3D68B8";
-    public showline: boolean = true;
-    public transparency: number = 50;
-  }
+  // export class ToSensorSettings {
+  //   public color: string = "3D68B8";
+  //   public showline: boolean = true;
+  //   public transparency: number = 50;
+  // }
 
   export class TooltipSettings {
     public show: boolean = true;

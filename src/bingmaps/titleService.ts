@@ -47,9 +47,9 @@ module powerbi.extensibility.visual {
         }
 
         private createLabelPushpin(node: NodeModel, size: number, format: SensorLabelSettings): Microsoft.Maps.Pushpin {
-            const point = Microsoft.Maps.WellKnownText.read(`${node.value}`) as Microsoft.Maps.Pushpin;
+            const point = Microsoft.Maps.WellKnownText.read(`${node.location}`) as Microsoft.Maps.Pushpin;
             const location = point.getLocation() as Microsoft.Maps.Location;
-            const text = node.category.toString();
+            const text = node.value.toString();
             let textColor = format.fontColor || this.textColorDefault;
             let fontSize = format.fontSize || this.fontSizeDefault;
             let fontFamily = format.fontType || this.fontFamilyDefault;

@@ -27,12 +27,20 @@ module powerbi.extensibility.visual {
     } 
     
     export interface NodeModel {
-        category: PrimitiveValue;
         value: PrimitiveValue;
+        location: PrimitiveValue;
     }  
 
     export interface NodeSlicerModel {
         nodes: NodeModel[];
         selectionId: ISelectionId;
+    } 
+
+    export interface CategoryModel {
+        icon: string;
+        name: string;
+        format: SensorSettings;
+        column: string;
+        table: string;
     } 
 }

@@ -185,7 +185,6 @@ p {
   border: 1px solid #9d9797;
   border-radius: 0.25rem;
   padding: 0px;
-
   .dropdown-item {
     padding: 0.25rem 0.5rem;
     color: #373738;
@@ -200,4 +199,20 @@ p {
 .dropdown-item:focus {
   color: #373738;
   background-color: rgba(199, 199, 199, 0.92);
+}
+
+.context-menu
+{
+
+ .dropdown-menu
+  {
+      color: #606060;
+      position:absolute;  
+      display:none;
+      z-index:10;
+  }
+
+  .dropdown-item { 
+    position: relative; 
+  }
 }

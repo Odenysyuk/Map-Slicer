@@ -1,13 +1,13 @@
 {
     "dataRoles": [
         {
-            "displayName": "Node names",
-            "name": "nodeNames",
+            "displayName": "Node values",
+            "name": "nodeValues",
             "kind": "Grouping"
         },    
         {
-            "displayName": "Node values",
-            "name": "nodeValues",
+            "displayName": "Node locations",
+            "name": "nodeLocations",
             "kind": "Measure"
         }
     ],
@@ -55,7 +55,7 @@
             }
         },
         "sensor": {
-            "displayName": "Sensor",
+            "displayName": "Node",
             "properties": {
                 "color":{
                     "displayName": "Default Color",
@@ -83,7 +83,7 @@
             }
         },
         "sensorLabel":{
-            "displayName": "Sensor Label",
+            "displayName": "Node label",
             "properties": {
                 "show": {
                     "displayName": "Turn on/off",
@@ -222,7 +222,7 @@
             }
         },
         "fromSensor": {
-            "displayName": "From",
+            "displayName": "Node 1",
             "properties": {
                 "color":{
                     "displayName": "Default Color",
@@ -250,7 +250,7 @@
             }
         },
         "toSensor": {
-            "displayName": "To",
+            "displayName": "Node 2",
             "properties": {
                 "color":{
                     "displayName": "Default Color",
@@ -290,22 +290,22 @@
     "dataViewMappings": [
         {
             "conditions": [{
-                "nodeNames": {
+                "nodeValues": {
                     "max": 2
                 },
-                "nodeValues": {
+                "nodeLocations": {
                     "max": 2
                 }
             }],
             "categorical": {
                 "categories": {
-                    "for": {"in": "nodeNames"},
+                    "for": {"in": "nodeValues"},
                     "dataReductionAlgorithm": {"sample": {"count": 2000}}
                 },
                 "values": {
                     "select": [
                         {
-                            "for": {"in": "nodeValues"}
+                            "for": {"in": "nodeLocations"}
                         }
                     ]
                 }

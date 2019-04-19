@@ -2,21 +2,25 @@ module powerbi.extensibility.visual {
 
     export class ConverterHelper {
 
+        public static getCategoryIcon(): string[]{
+            return ['far fa-circle', 'fas fa-play'];
+        }
+
         public static Convert(dataView: DataView, host: IVisualHost) {
+            let models: NodeModel[] = [];
             if (!dataView ||
                 !dataView.categorical ||
                 !dataView.categorical.categories ||
                 !dataView.categorical.categories[0] ||
-                !dataView.categorical.categories[0].values ||
-                !(dataView.categorical.categories[0].values.length > 0)) {
-                return;
+                !dataView.categorical.values ||
+                !(dataView.categorical.values.length > 0)) {
+                return models;
             }
 
             const categories = dataView.categorical.categories
-            const values = dataView.categorical.values;
-            let models: NodeModel[] = [];
+            const values = dataView.categorical.values;            
 
-            for (let c = 0; c < categories.length; c++) {
+            for (let c = 0; c < Math.min(categories.length, values.length); c++) {
                 const category = categories[c];
                 const dataValue = values[c];    
 
@@ -26,12 +30,12 @@ module powerbi.extensibility.visual {
 
                 for (let i = 0, len = Math.max(category.values.length, dataValue.values.length); i < len; i++) {
                     const model = {
-                        value: dataValue.values[i],
-                        category: category.values[i],
+                        location: dataValue.values[i],
+                        value: category.values[i],
                     };
 
                     const existElement = models.filter(elem => {
-                        return elem.category === model.category
+                        return elem.location === model.location
                             && elem.value === model.value
                     })
 
@@ -44,7 +48,7 @@ module powerbi.extensibility.visual {
             return models;
         }
 
-        public static ConvertCategoryNames(dataView: DataView, host: IVisualHost) {
+        public static ConvertCategoryNames(dataView: DataView, visualSettings: VisualSettings): CategoryModel[] {
             if (!dataView ||
                 !dataView.categorical ||
                 !dataView.categorical.categories ||
@@ -53,7 +57,20 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            return dataView.categorical.categories.map(c => c.source.displayName);  
+            const categoryFormats = [visualSettings.fromSensor, visualSettings.toSensor];
+            const categoryIcons = this.getCategoryIcon();
+            return dataView.categorical
+                           .categories
+                           .map((c, i) => 
+                           {
+                               return {
+                                   icon: categoryIcons[i],
+                                   name: c.source.displayName,
+                                   format: categoryFormats[i],
+                                   column: c.source.displayName,
+                                   table: c.source.queryName.substr(0, c.source.queryName.indexOf('.'))
+                                }
+                           });  
         }
 
         public static ConvertTableToModel(dv: DataView[], host: IVisualHost): SlicerMapModel[] {
