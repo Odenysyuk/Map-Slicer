@@ -39,7 +39,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
     export class Visual implements IVisual {
         private map: Microsoft.Maps.Map;
-        private divMap: d3.Selection<HTMLElement>;
+        private divMap: d3.Selection<HTMLElement>;        
         private containerFilter: d3.Selection<HTMLElement>;
         private rowContainer: d3.Selection<HTMLElement>;
         private visualSettings: VisualSettings;
@@ -50,14 +50,14 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         private mapController: BingMapController;
         private nodeModels: NodeModel[];
         private tooltipServiceWrapper: tooltip.ITooltipServiceWrapper;
-        private categoryNames: string[];
+        private categoryNames: CategoryModel[] = [];
 
         constructor(options: VisualConstructorOptions) {
             this.host = options.host;
             this.selectionIdBuilder = options.host.createSelectionIdBuilder();
             this.selectionManager = options.host.createSelectionManager();
             this.tooltipServiceWrapper = tooltip.createTooltipServiceWrapper(this.host.tooltipService, options.element);
-            this.mapController = new BingMapController(this.selectionManager);
+            this.mapController = new BingMapController(this.selectionManager, this.host, options.element);
 
             this.divMap = d3.select(options.element)
                 .append('div')
@@ -71,8 +71,8 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
             this.rowContainer = this.containerFilter
                 .append('div')
-                .classed('row', true);
-
+                .classed('row', true);             
+   
             this.loadedMap = false;
         }
 
@@ -84,8 +84,8 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                     .then(res => {
                         this.map = res as Microsoft.Maps.Map;
                         this.loadedMap = true;
-                        this.mapController.setMap(this.map);
-                        this.drawMap(options);
+                        this.mapController.setMap(this.map);            
+                        this.drawMap(options);            
                     });
                 return;
             } else {
@@ -93,24 +93,30 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             }
         }
 
-        private drawMap(options: VisualUpdateOptions) {
-            debugger;
+        private drawMap(options: VisualUpdateOptions) {        
             const height = options.viewport.height;
 
             try {
-                this.nodeModels = ConverterHelper.Convert(options && options.dataViews && options.dataViews[0], this.host);
-                this.categoryNames = ConverterHelper.ConvertCategoryNames(options && options.dataViews && options.dataViews[0], this.host);
+                const dataView = options && options.dataViews && options.dataViews[0];
+                this.nodeModels = ConverterHelper.Convert(dataView, this.host);
+                const categoryNames = ConverterHelper.ConvertCategoryNames(dataView, this.visualSettings);
+                
                 if (this.nodeModels && this.nodeModels.length) {
                     const mapHeight = height * 0.8;
                     const containerHeight = height - mapHeight;
                     this.divMap.style("height", mapHeight + 'px');
                     this.containerFilter.style("height", containerHeight + 'px');
-                    this.drawContainerFilter(options);
+
+                    if(this.isCategoryNameUpdates(categoryNames)){
+                        this.categoryNames = categoryNames;                     
+                        this.drawContainerFilter(options); 
+                    }
+                          
                 } else {
                     this.divMap.style("height", height);
                 }
 
-                this.mapController.drawMap(this.nodeModels, this.visualSettings);
+                this.mapController.drawMap(categoryNames, this.nodeModels || [], this.visualSettings);
             }
             catch (e) {
                 console.error("Couldn't draw map", e);
@@ -131,8 +137,6 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             //     column: categories.displayName,
             //     table: categories.queryName.substr(0, categories.queryName.indexOf('.')),
             // };
-
-            // debugger;
             // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [1038]);
             // this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
 
@@ -144,12 +148,12 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
 
             // });
-             Microsoft.Maps.Events.addHandler(this.map, 'rightclick', function (e: Microsoft.Maps.IMouseEventArgs)  {
-                console.log('marker identity is ');           
-                // selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
-                //      console.log(ids);
-                //  }).catch(e => console.error(e));                     
-             });          
+            //  Microsoft.Maps.Events.addHandler(this.map, 'rightclick', function (e: Microsoft.Maps.IMouseEventArgs)  {
+            //     console.log('marker identity is ');           
+            //     // selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
+            //     //      console.log(ids);
+            //     //  }).catch(e => console.error(e));                     
+            //  });          
         }
 
         private drawContainerFilter(options: VisualUpdateOptions) {
@@ -168,10 +172,30 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                 .append("div")
                 .classed('card-header text-center', true)
                 .append("h6")
-                .classed('mb-0', true)
-                .text(function (d) {
-                    return d;
+                .classed('mb-0', true);
+
+                header.append('i')
+                .attr('class', function (d) {
+                    return d.icon;
                 });
+                header.append('span')
+                .text(function (d) {
+                    return ` ${d.name}`;
+                });  
+        }
+
+        private isCategoryNameUpdates(categories: CategoryModel[]) : boolean{
+           
+            if(this.categoryNames.length !== categories.length){
+                return true;
+            }
+
+            const differentData = categories.filter((d, i)=>{
+                d.icon !== this.categoryNames[i].icon
+                || d.name !== this.categoryNames[i].name
+            })
+
+            return !differentData.length;
         }
 
         private static parseSettings(dataView: DataView): VisualSettings {

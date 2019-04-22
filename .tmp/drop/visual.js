@@ -32258,30 +32258,113 @@ var powerbi;
                  * @class
                  */
                 var BingMapController = (function () {
-                    function BingMapController(selectionManager) {
+                    function BingMapController(selectionManager, host, rootElement) {
+                        this.categoryNames = [];
                         this.selectionManager = selectionManager;
+                        this.host = host;
                         this.nodeService = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.NodeService();
                         this.mapType = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.MapTypeService();
                         this.titleService = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.TitleSevice();
+                        this.contextMenu = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ContextMenuService(rootElement, this.host);
                         this.sensorNodeModels = [];
+                        this.filterDictionary = {};
+                        this.filterTarget = [];
                     }
                     BingMapController.prototype.setMap = function (map) {
+                        var _this = this;
                         this.map = map;
                         this.tooltipService = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.TooltipService(map);
-                        this.contextMenu = new ContextMenuService(this.map);
+                        this.contextMenu.handleMap(this.map, function (category, shape) {
+                            if (!_this.filterDictionary[category.name]) {
+                                _this.filterDictionary[category.name] = [];
+                            }
+                            _this.filterDictionary[category.name].push({ value: shape.metadata.nodeId });
+                            var existFilter = _this.filterTarget.filter(function (f) { return f.table == category.table && f.column == category.column; });
+                            if (existFilter.length === 0) {
+                                _this.filterTarget.push({
+                                    column: category.column,
+                                    table: category.table
+                                });
+                            }
+                            debugger;
+                            var values = _this.filterTarget.map(function (f) { return _this.filterDictionary[f.column]; });
+                            var tupleValues = _this.cartesianJoin(values);
+                            // values = [
+                            //     [
+                            //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
+                            //         {
+                            //             value: null // the value for `Team` column of `DataTable` table
+                            //         },
+                            //         {
+                            //             value: 1020 // the value for `Value` column of `DataTable` table
+                            //         }
+                            //     ],
+                            //     [
+                            //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
+                            //         {
+                            //             value:1040 // the value for `Team` column of `DataTable` table
+                            //         },
+                            //         {
+                            //             value: 1002 // the value for `Value` column of `DataTable` table
+                            //         }
+                            //     ],
+                            // ];
+                            var filter = {
+                                $schema: "http://powerbi.com/product/schema#tuple",
+                                filterType: window['powerbi-models'].FilterType.Tuple,
+                                operator: "In",
+                                target: _this.filterTarget,
+                                values: tupleValues
+                            };
+                            _this.host.applyJsonFilter(filter, "general", "filter", 0 /* merge */);
+                        });
                     };
-                    BingMapController.prototype.drawMap = function (data, format) {
+                    BingMapController.prototype.cartesianObject = function (a, b) {
+                        return [].concat.apply([], a.map(function (a2) { return b.map(function (b2) { return [].concat(a2, b2); }); }));
+                    };
+                    BingMapController.prototype.cartesianJoin = function (values) {
+                        var cartesianArray = [];
+                        debugger;
+                        var _loop_1 = function (index) {
+                            if (!values[index] || values[index].length === 0) {
+                                return { value: cartesianArray };
+                            }
+                            else if (cartesianArray.length === 0) {
+                                cartesianArray = values[index].map(function (b) { return [].concat(b); });
+                            }
+                            else {
+                                cartesianArray = [].concat.apply([], cartesianArray.map(function (a2) { return values[index].map(function (b2) { return [].concat(a2, b2); }); }));
+                            }
+                        };
+                        for (var index = 0; index < values.length; index++) {
+                            var state_1 = _loop_1(index);
+                            if (typeof state_1 === "object")
+                                return state_1.value;
+                        }
+                        console.log(cartesianArray);
+                        return cartesianArray;
+                        // const [arrayFrom, ...arrayTo] = values;
+                        // if (!arrayTo || arrayTo.length === 0) {
+                        //     return arrayFrom.map(b => [].concat(b));     
+                        // }
+                        // return [].concat(... arrayFrom.map(a => arrayTo[0].map(b => [].concat(a, b)))); 
+                    };
+                    BingMapController.prototype.drawMap = function (categoryNames, data, format) {
                         var _this = this;
+                        if (this.isCategoryNameUpdates(categoryNames)) {
+                            this.categoryNames = categoryNames;
+                            this.contextMenu.draw(this.categoryNames);
+                        }
                         if (Microsoft.Maps.WellKnownText) {
-                            return this.reDrawMap(data, format);
+                            return this.updateMap(data, format);
                         }
                         else {
                             Microsoft.Maps.loadModule('Microsoft.Maps.WellKnownText', function () {
-                                return _this.reDrawMap(data, format);
+                                return _this.updateMap(data, format);
                             });
                         }
                     };
-                    BingMapController.prototype.reDrawMap = function (data, format) {
+                    BingMapController.prototype.updateMap = function (data, format) {
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
@@ -32356,18 +32439,6 @@ var powerbi;
                                         // if (format.tooltip.show) {
                                         //     await this.tooltipService.add(sensorNode);
                                         // }
-                                        // let selectionManager =  this.selectionManager;
-                                        debugger;
-                                        // this.selectionManager.registerOnSelectCallback(
-                                        // (ids: ISelectionId[]) => {
-                                        //     //called when a selection was set by Power BI
-                                        // });
-                                        // Microsoft.Maps.Events.addHandler(node, 'click', function (e: Microsoft.Maps.IMouseEventArgs)  {
-                                        //     console.log('marker identity is ', sensorData.selectionId);
-                                        //     selectionManager.select(sensorData.selectionId, false).then((ids: ISelectionId[]) =>{
-                                        //         console.log(ids);
-                                        //     }).catch(e => console.error(e));                     
-                                        // });
                                         return [2 /*return*/, sensorNode];
                                 }
                             });
@@ -32385,6 +32456,17 @@ var powerbi;
                                 return [2 /*return*/];
                             });
                         });
+                    };
+                    BingMapController.prototype.isCategoryNameUpdates = function (categories) {
+                        var _this = this;
+                        if (this.categoryNames.length !== categories.length) {
+                            return true;
+                        }
+                        var differentData = categories.filter(function (d, i) {
+                            d.icon !== _this.categoryNames[i].icon
+                                || d.name !== _this.categoryNames[i].name;
+                        });
+                        return !differentData.length;
                     };
                     return BingMapController;
                 }());
@@ -32432,59 +32514,94 @@ var powerbi;
         })(visual = extensibility.visual || (extensibility.visual = {}));
     })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
 })(powerbi || (powerbi = {}));
-var ContextMenuService = (function () {
-    function ContextMenuService(map) {
-        var _this = this;
-        this.contextMenu = new Microsoft.Maps.Infobox(map.getCenter(), {
-            visible: false,
-            showPointer: false,
-            showCloseButton: false,
-            htmlContent: this.getTooltipTemplate(),
-            offset: new Microsoft.Maps.Point(-75, 10)
-        });
-        this.contextMenu.setMap(map);
-        this.tooltipTemplate = this.getTooltipTemplate();
-        Microsoft.Maps.Events.addHandler(map, 'rightclick', function (e) {
-            _this.contextMenu.setOptions({ visible: false });
-            var event = e;
-            var shape = event.primitive;
-            if (shape instanceof Microsoft.Maps.Pushpin) {
-                console.log('Pushpin right clicked');
-                //Set the infobox options with the metadata of the pushpin.
-                _this.contextMenu.setOptions({
-                    location: event.location,
-                    visible: true
-                });
-            }
-        });
-    }
-    ContextMenuService.prototype.getTooltipTemplate = function () {
-        return "  \n        <div class=\"dropdown-menu\">\n            <a class=\"dropdown-item\" onclick =\"getTrainingName(1)\"><i class=\"far fa-circle\"></i> From</a>\n            <a class=\"dropdown-item\"><i class=\"fas fa-play\"></i> To</a>\n        </div>\n        ";
-    };
-    return ContextMenuService;
-}());
-var SensorFilterOperation = (function () {
-    function SensorFilterOperation() {
-        var _this = this;
-        debugger;
-        this.setFromBtn = document.getElementById("setFromBtn");
-        if (this.setFromBtn) {
-            this.setFromBtn.addEventListener("click", function (e) { return _this.getTrainingName(4); });
-        }
-        this.setToBtn = document.getElementById("setToBtn");
-        if (this.setToBtn) {
-            this.setToBtn.addEventListener("click", function (e) { return _this.getTrainingName(4); });
-        }
-    }
-    SensorFilterOperation.prototype.getTrainingName = function (n) {
-        console.log(n);
-        // button click handler
-    };
-    return SensorFilterOperation;
-}());
-function getTrainingName() {
-    console.log("getTrainingName");
-}
+var powerbi;
+(function (powerbi) {
+    var extensibility;
+    (function (extensibility) {
+        var visual;
+        (function (visual) {
+            var mapSlicerB1146AB518024EEF8B19C181A7ECC49E;
+            (function (mapSlicerB1146AB518024EEF8B19C181A7ECC49E) {
+                "use strict";
+                var ContextMenuService = (function () {
+                    function ContextMenuService(element, host) {
+                        this.categoryNames = [];
+                        this.host = host;
+                        this.init(element);
+                    }
+                    ContextMenuService.prototype.init = function (element) {
+                        var _this = this;
+                        var menu = d3.select(element)
+                            .append('div')
+                            .classed('context-menu', true)
+                            .attr({ id: "menu" });
+                        this.contextMenuElem = menu.append('div')
+                            .classed('dropdown-menu', true)
+                            .attr({ id: "popupmenu" });
+                        this.contextMenuElem.on('mouseleave', function (e) {
+                            _this.removePopupMenu();
+                        });
+                    };
+                    ContextMenuService.prototype.draw = function (categories) {
+                        this.categoryNames = categories;
+                        this.contextMenuElem.html('');
+                        this.menuItem = this.contextMenuElem.selectAll('div')
+                            .data(this.categoryNames)
+                            .enter()
+                            .append("a")
+                            .classed('dropdown-item', true);
+                        this.menuItem.append('i')
+                            .attr('class', function (d) {
+                            return d.icon;
+                        });
+                        this.menuItem.append('span')
+                            .text(function (d) {
+                            return " " + d.name;
+                        });
+                    };
+                    ContextMenuService.prototype.handleMap = function (map, menuFunction) {
+                        var _this = this;
+                        Microsoft.Maps.Events.addHandler(map, 'rightclick', function (e) {
+                            _this.removePopupMenu();
+                            var event = e;
+                            var shape = event.primitive;
+                            var host = _this.host;
+                            if (shape instanceof Microsoft.Maps.Pushpin && !shape.metadata.categoryId) {
+                                _this.showPopupMenu(event);
+                                _this.menuItem.on('click', function (d) {
+                                    menuFunction(d, shape);
+                                    document.getElementById('popupmenu').style.display = 'none';
+                                });
+                                // this.menuItem.on('click', function (d) {
+                                //     console.log(shape);
+                                //     //map.entities.remove(shape);
+                                //     let target = {
+                                //         column: d.column,
+                                //         table: d.table
+                                //     };
+                                // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [shape.metadata.nodeId]);
+                                // host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
+                                //     document.getElementById('popupmenu').style.display = 'none';
+                                // });
+                            }
+                        });
+                    };
+                    ContextMenuService.prototype.showPopupMenu = function (e) {
+                        var menu = document.getElementById('popupmenu');
+                        menu.style.display = 'block'; //Showing the menu
+                        menu.style.left = e.pageX + "px"; //Positioning the menu
+                        menu.style.top = e.pageY + "px";
+                    };
+                    ContextMenuService.prototype.removePopupMenu = function () {
+                        document.getElementById('popupmenu').style.display = 'none';
+                    };
+                    return ContextMenuService;
+                }());
+                mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ContextMenuService = ContextMenuService;
+            })(mapSlicerB1146AB518024EEF8B19C181A7ECC49E = visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E || (visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E = {}));
+        })(visual = extensibility.visual || (extensibility.visual = {}));
+    })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
+})(powerbi || (powerbi = {}));
 // declare var loadMap;
 // class MapController {
 //     private _div: HTMLDivElement;
@@ -32584,12 +32701,16 @@ var powerbi;
                         });
                     };
                     NodeService.prototype.CreatePushpin = function (node, svg) {
-                        var point = Microsoft.Maps.WellKnownText.read("" + node.value);
+                        var point = Microsoft.Maps.WellKnownText.read("" + node.location);
                         if (point) {
                             point.setOptions({
                                 icon: svg,
                                 anchor: new Microsoft.Maps.Point(this.svgSize, this.svgSize)
                             });
+                            point.metadata = {
+                                nodeId: node.value,
+                                categoryId: null
+                            };
                         }
                         return point;
                     };
@@ -32706,9 +32827,9 @@ var powerbi;
                             .replace('{fontFamily}', fontFamily);
                     };
                     TitleSevice.prototype.createLabelPushpin = function (node, size, format) {
-                        var point = Microsoft.Maps.WellKnownText.read("" + node.value);
+                        var point = Microsoft.Maps.WellKnownText.read("" + node.location);
                         var location = point.getLocation();
-                        var text = node.category.toString();
+                        var text = node.value.toString();
                         var textColor = format.fontColor || this.textColorDefault;
                         var fontSize = format.fontSize || this.fontSizeDefault;
                         var fontFamily = format.fontType || this.fontFamilyDefault;
@@ -32765,10 +32886,10 @@ var powerbi;
                             var _this = this;
                             var text;
                             return __generator(this, function (_a) {
-                                if (!sensorNode.data.category) {
+                                if (!sensorNode.data.value) {
                                     return [2 /*return*/];
                                 }
-                                text = sensorNode.data.category.toString();
+                                text = sensorNode.data.value.toString();
                                 if (text && text !== '') {
                                     Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', function (e) {
                                         _this.tooltip.setOptions({ visible: false });
@@ -32892,10 +33013,10 @@ var powerbi;
                     function VisualSettings() {
                         var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.mapLayers = new MapLayerSettings();
-                        _this.sensor = new SensorSettings();
+                        _this.sensor = new SensorSettings("01B8AA", true, 50);
                         _this.sensorLabel = new SensorLabelSettings();
-                        _this.fromSensor = new FromSensorSettings();
-                        _this.toSensor = new ToSensorSettings();
+                        _this.fromSensor = new SensorSettings("0052FF", true, 50);
+                        _this.toSensor = new SensorSettings("3D68B8", true, 50);
                         _this.tooltip = new TooltipSettings();
                         return _this;
                     }
@@ -32910,10 +33031,13 @@ var powerbi;
                 }());
                 mapSlicerB1146AB518024EEF8B19C181A7ECC49E.MapLayerSettings = MapLayerSettings;
                 var SensorSettings = (function () {
-                    function SensorSettings() {
+                    function SensorSettings(color, showline, transparency) {
                         this.color = "01B8AA";
                         this.showline = true;
                         this.transparency = 50;
+                        this.color = color;
+                        this.showline = showline;
+                        this.transparency = transparency;
                     }
                     return SensorSettings;
                 }());
@@ -32929,24 +33053,16 @@ var powerbi;
                     return SensorLabelSettings;
                 }());
                 mapSlicerB1146AB518024EEF8B19C181A7ECC49E.SensorLabelSettings = SensorLabelSettings;
-                var FromSensorSettings = (function () {
-                    function FromSensorSettings() {
-                        this.color = "0052FF";
-                        this.showline = true;
-                        this.transparency = 50;
-                    }
-                    return FromSensorSettings;
-                }());
-                mapSlicerB1146AB518024EEF8B19C181A7ECC49E.FromSensorSettings = FromSensorSettings;
-                var ToSensorSettings = (function () {
-                    function ToSensorSettings() {
-                        this.color = "3D68B8";
-                        this.showline = true;
-                        this.transparency = 50;
-                    }
-                    return ToSensorSettings;
-                }());
-                mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ToSensorSettings = ToSensorSettings;
+                // export class SensorSettings {
+                //   public color: string = "0052FF";
+                //   public showline: boolean = true;
+                //   public transparency: number = 50;
+                // }
+                // export class ToSensorSettings {
+                //   public color: string = "3D68B8";
+                //   public showline: boolean = true;
+                //   public transparency: number = 50;
+                // }
                 var TooltipSettings = (function () {
                     function TooltipSettings() {
                         this.show = true;
@@ -32969,31 +33085,34 @@ var powerbi;
                 var ConverterHelper = (function () {
                     function ConverterHelper() {
                     }
+                    ConverterHelper.getCategoryIcon = function () {
+                        return ['far fa-circle', 'fas fa-play'];
+                    };
                     ConverterHelper.Convert = function (dataView, host) {
+                        var models = [];
                         if (!dataView ||
                             !dataView.categorical ||
                             !dataView.categorical.categories ||
                             !dataView.categorical.categories[0] ||
-                            !dataView.categorical.categories[0].values ||
-                            !(dataView.categorical.categories[0].values.length > 0)) {
-                            return;
+                            !dataView.categorical.values ||
+                            !(dataView.categorical.values.length > 0)) {
+                            return models;
                         }
                         var categories = dataView.categorical.categories;
                         var values = dataView.categorical.values;
-                        var models = [];
-                        for (var c = 0; c < categories.length; c++) {
+                        for (var c = 0; c < Math.min(categories.length, values.length); c++) {
                             var category = categories[c];
                             var dataValue = values[c];
                             if (!dataValue) {
                                 continue;
                             }
-                            var _loop_1 = function (i, len) {
+                            var _loop_2 = function (i, len) {
                                 var model = {
-                                    value: dataValue.values[i],
-                                    category: category.values[i],
+                                    location: dataValue.values[i],
+                                    value: category.values[i],
                                 };
                                 var existElement = models.filter(function (elem) {
-                                    return elem.category === model.category
+                                    return elem.location === model.location
                                         && elem.value === model.value;
                                 });
                                 if (!existElement.length) {
@@ -33001,12 +33120,12 @@ var powerbi;
                                 }
                             };
                             for (var i = 0, len = Math.max(category.values.length, dataValue.values.length); i < len; i++) {
-                                _loop_1(i, len);
+                                _loop_2(i, len);
                             }
                         }
                         return models;
                     };
-                    ConverterHelper.ConvertCategoryNames = function (dataView, host) {
+                    ConverterHelper.ConvertCategoryNames = function (dataView, visualSettings) {
                         if (!dataView ||
                             !dataView.categorical ||
                             !dataView.categorical.categories ||
@@ -33014,7 +33133,19 @@ var powerbi;
                             !dataView.categorical.categories[0].source) {
                             return;
                         }
-                        return dataView.categorical.categories.map(function (c) { return c.source.displayName; });
+                        var categoryFormats = [visualSettings.fromSensor, visualSettings.toSensor];
+                        var categoryIcons = this.getCategoryIcon();
+                        return dataView.categorical
+                            .categories
+                            .map(function (c, i) {
+                            return {
+                                icon: categoryIcons[i],
+                                name: c.source.displayName,
+                                format: categoryFormats[i],
+                                column: c.source.displayName,
+                                table: c.source.queryName.substr(0, c.source.queryName.indexOf('.'))
+                            };
+                        });
                     };
                     ConverterHelper.ConvertTableToModel = function (dv, host) {
                         var viewModel = [];
@@ -33301,11 +33432,12 @@ var powerbi;
                 var tooltip = powerbi.extensibility.utils.tooltip;
                 var Visual = (function () {
                     function Visual(options) {
+                        this.categoryNames = [];
                         this.host = options.host;
                         this.selectionIdBuilder = options.host.createSelectionIdBuilder();
                         this.selectionManager = options.host.createSelectionManager();
                         this.tooltipServiceWrapper = tooltip.createTooltipServiceWrapper(this.host.tooltipService, options.element);
-                        this.mapController = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.BingMapController(this.selectionManager);
+                        this.mapController = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.BingMapController(this.selectionManager, this.host, options.element);
                         this.divMap = d3.select(options.element)
                             .append('div')
                             .classed('map', true)
@@ -33337,22 +33469,25 @@ var powerbi;
                         }
                     };
                     Visual.prototype.drawMap = function (options) {
-                        debugger;
                         var height = options.viewport.height;
                         try {
-                            this.nodeModels = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.Convert(options && options.dataViews && options.dataViews[0], this.host);
-                            this.categoryNames = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.ConvertCategoryNames(options && options.dataViews && options.dataViews[0], this.host);
+                            var dataView = options && options.dataViews && options.dataViews[0];
+                            this.nodeModels = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.Convert(dataView, this.host);
+                            var categoryNames = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.ConvertCategoryNames(dataView, this.visualSettings);
                             if (this.nodeModels && this.nodeModels.length) {
                                 var mapHeight = height * 0.8;
                                 var containerHeight = height - mapHeight;
                                 this.divMap.style("height", mapHeight + 'px');
                                 this.containerFilter.style("height", containerHeight + 'px');
-                                this.drawContainerFilter(options);
+                                if (this.isCategoryNameUpdates(categoryNames)) {
+                                    this.categoryNames = categoryNames;
+                                    this.drawContainerFilter(options);
+                                }
                             }
                             else {
                                 this.divMap.style("height", height);
                             }
-                            this.mapController.drawMap(this.nodeModels, this.visualSettings);
+                            this.mapController.drawMap(categoryNames, this.nodeModels || [], this.visualSettings);
                         }
                         catch (e) {
                             console.error("Couldn't draw map", e);
@@ -33367,7 +33502,6 @@ var powerbi;
                         //     column: categories.displayName,
                         //     table: categories.queryName.substr(0, categories.queryName.indexOf('.')),
                         // };
-                        // debugger;
                         // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [1038]);
                         // this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
                         // this.divMap.on('click', () => {
@@ -33375,12 +33509,12 @@ var powerbi;
                         //                 console.log(ids);
                         //              }).catch(e => console.error(e))
                         // });
-                        Microsoft.Maps.Events.addHandler(this.map, 'rightclick', function (e) {
-                            console.log('marker identity is ');
-                            // selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
-                            //      console.log(ids);
-                            //  }).catch(e => console.error(e));                     
-                        });
+                        //  Microsoft.Maps.Events.addHandler(this.map, 'rightclick', function (e: Microsoft.Maps.IMouseEventArgs)  {
+                        //     console.log('marker identity is ');           
+                        //     // selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
+                        //     //      console.log(ids);
+                        //     //  }).catch(e => console.error(e));                     
+                        //  });          
                     };
                     Visual.prototype.drawContainerFilter = function (options) {
                         this.rowContainer.html('');
@@ -33396,10 +33530,26 @@ var powerbi;
                             .append("div")
                             .classed('card-header text-center', true)
                             .append("h6")
-                            .classed('mb-0', true)
-                            .text(function (d) {
-                            return d;
+                            .classed('mb-0', true);
+                        header.append('i')
+                            .attr('class', function (d) {
+                            return d.icon;
                         });
+                        header.append('span')
+                            .text(function (d) {
+                            return " " + d.name;
+                        });
+                    };
+                    Visual.prototype.isCategoryNameUpdates = function (categories) {
+                        var _this = this;
+                        if (this.categoryNames.length !== categories.length) {
+                            return true;
+                        }
+                        var differentData = categories.filter(function (d, i) {
+                            d.icon !== _this.categoryNames[i].icon
+                                || d.name !== _this.categoryNames[i].name;
+                        });
+                        return !differentData.length;
                     };
                     Visual.parseSettings = function (dataView) {
                         return mapSlicerB1146AB518024EEF8B19C181A7ECC49E.VisualSettings.parse(dataView);
@@ -33430,7 +33580,7 @@ var powerbi;
                 displayName: 'MapSlicer',
                 class: 'Visual',
                 version: '1.0.0',
-                apiVersion: '2.2.0',
+                apiVersion: '2.3.0',
                 create: function (options) { return new powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E.Visual(options); },
                 custom: true
             };

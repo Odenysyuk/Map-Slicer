@@ -16,7 +16,7 @@ module powerbi.extensibility.visual {
         private sensorNodeModels: SensorNodeModel[];
         private host: IVisualHost;
         private contextMenu: ContextMenuService;
-        private categoryNames: CategoryModel[] = [];   
+        private categoryNames: CategoryModel[] = [];
         private filterDictionary: {[key:string]:ITupleElementValue[]}
         private filterTarget: ITupleFilterTarget;
 
@@ -25,8 +25,8 @@ module powerbi.extensibility.visual {
             this.host = host;
             this.nodeService = new NodeService();
             this.mapType = new MapTypeService();
-            this.titleService = new TitleSevice(); 
-            this.contextMenu = new ContextMenuService(rootElement, this.host); 
+            this.titleService = new TitleSevice();
+            this.contextMenu = new ContextMenuService(rootElement, this.host);
             this.sensorNodeModels = [];
             this.filterDictionary = {};
             this.filterTarget = [];
@@ -35,16 +35,13 @@ module powerbi.extensibility.visual {
         public setMap(map: Microsoft.Maps.Map) {
             this.map = map;
             this.tooltipService = new TooltipService(map);
-            debugger;
-            const filterType = FilterType.Tuple
             this.contextMenu.handleMap(this.map, (category: CategoryModel, shape: Microsoft.Maps.IPrimitive)=>{
-           
+
                 if(!this.filterDictionary[category.name]){
                     this.filterDictionary[category.name] = [];
                 }
-                this.filterDictionary[category.name].push({value:shape.metadata.nodeId});  
+                this.filterDictionary[category.name].push({value:shape.metadata.nodeId});
 
-                debugger;
                 const existFilter = this.filterTarget.filter((f:IFilterColumnTarget) => f.table == category.table && f.column == category.column);
                 if (existFilter.length === 0) {
                     this.filterTarget.push({
@@ -53,27 +50,84 @@ module powerbi.extensibility.visual {
                     });
                 }
 
-                const values = this.filterTarget.map(f => this.filterDictionary[category.name]);   
-
                 debugger;
-                let filter: ITupleFilter = {
+                let values = this.filterTarget.map((f:IFilterColumnTarget) => this.filterDictionary[f.column]);  
+                let tupleValues = this.cartesianJoin(values);
+
+                // values = [
+                //     [
+                //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
+                //         {
+                //             value: null // the value for `Team` column of `DataTable` table
+                //         },
+                //         {
+                //             value: 1020 // the value for `Value` column of `DataTable` table
+                //         }
+                //     ],
+                //     [
+                //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
+                //         {
+                //             value:1040 // the value for `Team` column of `DataTable` table
+                //         },
+                //         {
+                //             value: 1002 // the value for `Value` column of `DataTable` table
+                //         }
+                //     ],
+
+                // ];
+
+ 
+                let filter: ITupleFilter =
+                {
                     $schema: "http://powerbi.com/product/schema#tuple",
-                    filterType: 6,
+                    filterType: window['powerbi-models'].FilterType.Tuple,
                     operator: "In",
                     target: this.filterTarget,
-                    values: values
+                    values: tupleValues
                 }
+                this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);     
+            });
+        }
 
-                //let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(this.filterTarget, "In", values);
-                this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
-            });            
+
+        private  cartesianObject(a: ITupleElementValue[], b: ITupleElementValue[]): ITupleElementValue[][] {
+            return  [].concat(...a.map(a2 => b.map(b2 => [].concat(a2, b2))));
+        }
+
+
+        private cartesianJoin(values: ITupleElementValue[][]): ITupleElementValue[][]{             
+            let cartesianArray:ITupleElementValue[][] = [];
+
+            debugger;
+            for (let index = 0; index < values.length; index++) {
+
+                if (!values[index] || values[index].length === 0) {
+                    return cartesianArray;  
+                }
+                else if(cartesianArray.length === 0){
+                    cartesianArray =  values[index].map(b => [].concat(b));   
+                }else{
+                    cartesianArray = [].concat(...cartesianArray.map(a2 => values[index].map(b2 => [].concat(a2, b2))));   
+                }    
+            }
+
+            console.log(cartesianArray);
+      
+            return cartesianArray;
+            // const [arrayFrom, ...arrayTo] = values;
+
+            // if (!arrayTo || arrayTo.length === 0) {
+            //     return arrayFrom.map(b => [].concat(b));     
+            // }
+
+            // return [].concat(... arrayFrom.map(a => arrayTo[0].map(b => [].concat(a, b)))); 
         }
 
         public drawMap(categoryNames: CategoryModel[], data: NodeModel[], format: VisualSettings) {
-            
+
             if(this.isCategoryNameUpdates(categoryNames)){
-                this.categoryNames = categoryNames;   
-                this.contextMenu.draw(this.categoryNames); 
+                this.categoryNames = categoryNames;
+                this.contextMenu.draw(this.categoryNames);
             }
 
             if (Microsoft.Maps.WellKnownText) {
@@ -88,7 +142,7 @@ module powerbi.extensibility.visual {
 
         async updateMap(data: NodeModel[], format: VisualSettings) {
             await this.resetMap();
- 
+
             await Promise.all([
                 this.mapType.restyleMap(this.map, format.mapLayers),
                 this.drawSensors(data, format)
@@ -105,7 +159,7 @@ module powerbi.extensibility.visual {
         }
 
         async drawSensor(sensorData: NodeModel, format: VisualSettings, map: Microsoft.Maps.Map) {
-           
+
             let node = null;
             let label = null;
             let tooltip = null;
@@ -142,7 +196,7 @@ module powerbi.extensibility.visual {
         }
 
         private isCategoryNameUpdates(categories: CategoryModel[]) : boolean{
-           
+
             if(this.categoryNames.length !== categories.length){
                 return true;
             }

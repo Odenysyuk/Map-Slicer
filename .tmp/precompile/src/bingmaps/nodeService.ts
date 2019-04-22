@@ -14,17 +14,22 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
             const gradientColor = RgbColor.hexToRgb(format.color, format.transparency / 100).toString();
             const gradientColorLine = format.showline ? RgbColor.pickHex(format.color).toString() : gradientColor;
             const circle = this.CreateCircle(gradientColor, gradientColorLine);
-
             return this.CreatePushpin(dataView, circle);
         }
 
         private CreatePushpin(node: NodeModel, svg: string): Microsoft.Maps.Pushpin {
-            const point = Microsoft.Maps.WellKnownText.read(`${node.value}`) as Microsoft.Maps.Pushpin;
+            const point = Microsoft.Maps.WellKnownText.read(`${node.location}`) as Microsoft.Maps.Pushpin;
             if (point) {
                 point.setOptions({
                     icon: svg,
-                    anchor: new Microsoft.Maps.Point(this.svgSize, this.svgSize)
+                    anchor: new Microsoft.Maps.Point(this.svgSize, this.svgSize)                
                 })
+
+                point.metadata = {
+                    nodeId: node.value,
+                    categoryId: null                
+                }
+                
             }
             return point;
         }

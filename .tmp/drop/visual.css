@@ -9226,3 +9226,12 @@
   color: #373738;
   background-color: rgba(199, 199, 199, 0.92);
 }
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-menu .dropdown-menu {
+  color: #606060;
+  position: absolute;
+  display: none;
+  z-index: 10;
+}
+.visual-mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG .context-menu .dropdown-item {
+  position: relative;
+}

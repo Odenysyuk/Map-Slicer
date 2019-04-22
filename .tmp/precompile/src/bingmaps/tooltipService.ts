@@ -19,11 +19,11 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
         async add(sensorNode: SensorNodeModel) {
 
-            if(!sensorNode.data.category){
+            if(!sensorNode.data.value){
                 return;
             }
 
-            const text = sensorNode.data.category.toString();
+            const text = sensorNode.data.value.toString();
             if (text && text !== '') {
                 Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', e => {
                     this.tooltip.setOptions({ visible: false });
