@@ -4,7 +4,7 @@ const url = 'https://www.bing.com/api/maps/mapcontrol?callback=onBingLoaded&bran
 class BingMapsLoader {
     private static promise;
 
-    public static load(div: HTMLDivElement, fm: VisualFormat) {
+    public static load(div: HTMLDivElement, mapLayers: MapLayerFormat) {
         if (!BingMapsLoader.promise) {
 
             // Make promise to load
@@ -13,7 +13,7 @@ class BingMapsLoader {
                 // Set callback for when bing maps is loaded.
                 onBingLoaded = (ev) => {
 
-                    var setting = this.getMapParameter(div, fm);
+                    var setting = this.getMapParameter(div, mapLayers);
                     let map = new Microsoft.Maps.Map(div, setting);
                     Microsoft.Maps.loadModule('Microsoft.Maps.SpatialMath');
                     Microsoft.Maps.loadModule('Microsoft.Maps.WellKnownText');
@@ -34,14 +34,14 @@ class BingMapsLoader {
         return BingMapsLoader.promise;
     }
 
-    static getMapParameter(div: HTMLDivElement, fm: VisualFormat): Microsoft.Maps.IMapLoadOptions {
+    static getMapParameter(div: HTMLDivElement, mapLayers: MapLayerFormat): Microsoft.Maps.IMapLoadOptions {
         var para = {
             credentials: 'AidYBxBA7LCx2Uo3v-4QJE2zRVgvqg4KquhupR_dRRIGbmKd1A1CpWnjEJulgAUe',
             showDashboard: false,
             showTermsLink: false,
             showLogo: false,
             showScalebar: false,
-            mapTypeId: this.mapType(fm.mapLayers),
+            mapTypeId: this.mapType(mapLayers),
             liteMode: false
         } as Microsoft.Maps.IMapLoadOptions;
 

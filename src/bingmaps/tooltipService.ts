@@ -26,6 +26,7 @@ module powerbi.extensibility.visual {
             const text = sensorNode.data.value.toString();
             if (text && text !== '') {
                 Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', e => {
+                    debugger;
                     this.tooltip.setOptions({ visible: false });
                     //Set the infobox options with the metadata of the pushpin.
                     this.tooltip.setOptions({
@@ -33,7 +34,6 @@ module powerbi.extensibility.visual {
                         htmlContent: this.tooltipTemplate.replace('{title}', text),
                         visible: true
                     });
-
                 });
                 Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseout', x => { this.tooltip.setOptions({ visible: false }) });
             }

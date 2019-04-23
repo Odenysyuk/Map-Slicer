@@ -10,8 +10,6 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
         private menuItem: d3.Selection<CategoryModel>;
         private categoryNames: CategoryModel[] = [];
         private host: IVisualHost;
-        private categoryColumn: string;
-        private table: string;
 
         constructor(element: HTMLElement, host: IVisualHost) {
             this.host = host;
@@ -58,28 +56,13 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                 this.removePopupMenu();
                 var event = (e as Microsoft.Maps.IMouseEventArgs);
                 var shape = event.primitive;
-                const host = this.host;
 
                 if (shape instanceof Microsoft.Maps.Pushpin && !shape.metadata.categoryId) {
                     this.showPopupMenu(event);
-
-                    this.menuItem.on('click', function (d) {
+                    this.menuItem.on('click', function (d) {                  
                         menuFunction(d, shape);
-                        document.getElementById('popupmenu').style.display = 'none';
-                    });
-
-                    // this.menuItem.on('click', function (d) {
-                    //     console.log(shape);
-                    //     //map.entities.remove(shape);
-                    //     let target = {
-                    //         column: d.column,
-                    //         table: d.table
-                    //     };
-
-                    // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [shape.metadata.nodeId]);
-                    // host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
-                    //     document.getElementById('popupmenu').style.display = 'none';
-                    // });
+                        document.getElementById('popupmenu').style.display = 'none';  
+                    }); 
                 }
             });
         }

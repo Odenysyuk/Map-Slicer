@@ -276,15 +276,6 @@
                     }
                 }
             }
-        },
-        "tooltip":{
-            "displayName": "Tooltip",
-            "properties": {
-                "show": {
-                    "displayName": "Turn on/off",
-                    "type": {"bool": true}
-                }
-            }
         }
     },
     "dataViewMappings": [
@@ -311,5 +302,11 @@
                 }
             }
         }
-    ]
+    ],
+    "supportsHighlight": true,
+    "suppressDefaultTitle": true,
+    "supportsSynchronizingFilterState": true,
+    "sorting": {
+        "default": {}
+    }
 }

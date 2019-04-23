@@ -32173,26 +32173,18 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 var url = 'https://www.bing.com/api/maps/mapcontrol?callback=onBingLoaded&branch=release';
 var BingMapsLoader = (function () {
     function BingMapsLoader() {
     }
-    BingMapsLoader.load = function (div, fm) {
+    BingMapsLoader.load = function (div, mapLayers) {
         var _this = this;
         if (!BingMapsLoader.promise) {
             // Make promise to load
             BingMapsLoader.promise = new Promise(function (resolve) {
                 // Set callback for when bing maps is loaded.
                 onBingLoaded = function (ev) {
-                    var setting = _this.getMapParameter(div, fm);
+                    var setting = _this.getMapParameter(div, mapLayers);
                     var map = new Microsoft.Maps.Map(div, setting);
                     Microsoft.Maps.loadModule('Microsoft.Maps.SpatialMath');
                     Microsoft.Maps.loadModule('Microsoft.Maps.WellKnownText');
@@ -32210,14 +32202,14 @@ var BingMapsLoader = (function () {
         // Always return promise. When 'load' is called many times, the promise is already resolved.
         return BingMapsLoader.promise;
     };
-    BingMapsLoader.getMapParameter = function (div, fm) {
+    BingMapsLoader.getMapParameter = function (div, mapLayers) {
         var para = {
             credentials: 'AidYBxBA7LCx2Uo3v-4QJE2zRVgvqg4KquhupR_dRRIGbmKd1A1CpWnjEJulgAUe',
             showDashboard: false,
             showTermsLink: false,
             showLogo: false,
             showScalebar: false,
-            mapTypeId: this.mapType(fm.mapLayers),
+            mapTypeId: this.mapType(mapLayers),
             liteMode: false
         };
         para.center = new Microsoft.Maps.Location(0, 0);
@@ -32258,9 +32250,8 @@ var powerbi;
                  * @class
                  */
                 var BingMapController = (function () {
-                    function BingMapController(selectionManager, host, rootElement) {
+                    function BingMapController(host, rootElement, containerFilter) {
                         this.categoryNames = [];
-                        this.selectionManager = selectionManager;
                         this.host = host;
                         this.nodeService = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.NodeService();
                         this.mapType = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.MapTypeService();
@@ -32269,6 +32260,9 @@ var powerbi;
                         this.sensorNodeModels = [];
                         this.filterDictionary = {};
                         this.filterTarget = [];
+                        this.rowContainer = containerFilter
+                            .append('div')
+                            .classed('row', true);
                     }
                     BingMapController.prototype.setMap = function (map) {
                         var _this = this;
@@ -32278,82 +32272,45 @@ var powerbi;
                             if (!_this.filterDictionary[category.name]) {
                                 _this.filterDictionary[category.name] = [];
                             }
-                            _this.filterDictionary[category.name].push({ value: shape.metadata.nodeId });
-                            var existFilter = _this.filterTarget.filter(function (f) { return f.table == category.table && f.column == category.column; });
-                            if (existFilter.length === 0) {
-                                _this.filterTarget.push({
-                                    column: category.column,
-                                    table: category.table
-                                });
+                            _this.filterDictionary[category.name].push(shape.metadata.nodeId);
+                            var existFilter = _this.filterTarget.filter(function (f) { return f.column == category.column; });
+                            if (!existFilter.length) {
+                                _this.filterTarget.push({ column: category.column, table: category.table });
                             }
-                            debugger;
-                            var values = _this.filterTarget.map(function (f) { return _this.filterDictionary[f.column]; });
-                            var tupleValues = _this.cartesianJoin(values);
-                            // values = [
-                            //     [
-                            //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
-                            //         {
-                            //             value: null // the value for `Team` column of `DataTable` table
-                            //         },
-                            //         {
-                            //             value: 1020 // the value for `Value` column of `DataTable` table
-                            //         }
-                            //     ],
-                            //     [
-                            //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
-                            //         {
-                            //             value:1040 // the value for `Team` column of `DataTable` table
-                            //         },
-                            //         {
-                            //             value: 1002 // the value for `Value` column of `DataTable` table
-                            //         }
-                            //     ],
-                            // ];
-                            var filter = {
-                                $schema: "http://powerbi.com/product/schema#tuple",
-                                filterType: window['powerbi-models'].FilterType.Tuple,
-                                operator: "In",
-                                target: _this.filterTarget,
-                                values: tupleValues
-                            };
-                            _this.host.applyJsonFilter(filter, "general", "filter", 0 /* merge */);
+                            _this.filterData();
                         });
                     };
-                    BingMapController.prototype.cartesianObject = function (a, b) {
-                        return [].concat.apply([], a.map(function (a2) { return b.map(function (b2) { return [].concat(a2, b2); }); }));
-                    };
-                    BingMapController.prototype.cartesianJoin = function (values) {
-                        var cartesianArray = [];
-                        debugger;
-                        var _loop_1 = function (index) {
-                            if (!values[index] || values[index].length === 0) {
-                                return { value: cartesianArray };
-                            }
-                            else if (cartesianArray.length === 0) {
-                                cartesianArray = values[index].map(function (b) { return [].concat(b); });
-                            }
-                            else {
-                                cartesianArray = [].concat.apply([], cartesianArray.map(function (a2) { return values[index].map(function (b2) { return [].concat(a2, b2); }); }));
-                            }
-                        };
-                        for (var index = 0; index < values.length; index++) {
-                            var state_1 = _loop_1(index);
-                            if (typeof state_1 === "object")
-                                return state_1.value;
-                        }
-                        console.log(cartesianArray);
-                        return cartesianArray;
-                        // const [arrayFrom, ...arrayTo] = values;
-                        // if (!arrayTo || arrayTo.length === 0) {
-                        //     return arrayFrom.map(b => [].concat(b));     
-                        // }
-                        // return [].concat(... arrayFrom.map(a => arrayTo[0].map(b => [].concat(a, b)))); 
-                    };
-                    BingMapController.prototype.drawMap = function (categoryNames, data, format) {
+                    BingMapController.prototype.filterData = function () {
                         var _this = this;
+                        var filters = this.filterTarget.map(function (filterTarget) { return new window['powerbi-models'].BasicFilter(filterTarget, "In", _this.filterDictionary[filterTarget.column]); });
+                        this.host.applyJsonFilter(filters, "general", "filter", 0 /* merge */);
+                    };
+                    BingMapController.prototype.drawMap = function (categoryNames, data, format, jsonFilter) {
+                        var _this = this;
+                        debugger;
                         if (this.isCategoryNameUpdates(categoryNames)) {
+                            var basicFilters = jsonFilter;
+                            this.filterTarget = [];
+                            this.filterDictionary = {};
+                            if (basicFilters || basicFilters.length) {
+                                var extractFilter = basicFilters.filter(function (f) { return categoryNames.filter(function (c) { return c.column == f.target.column && c.table == f.target.table; }).length; });
+                                if (extractFilter.length !== basicFilters.length) {
+                                    this.host.applyJsonFilter(extractFilter, "general", "filter", 0 /* merge */);
+                                    return;
+                                }
+                                basicFilters.forEach(function (f) {
+                                    _this.filterTarget.push(f.target);
+                                    _this.filterDictionary[f.target.column] = f.values;
+                                });
+                            }
                             this.categoryNames = categoryNames;
                             this.contextMenu.draw(this.categoryNames);
+                            this.drawContainerFilter();
+                            this.categoryNames.forEach(function (category) {
+                                _this.updateSensorsFilter(category.name, function (sensorName, categoryName) {
+                                    _this.removeSensorFromfilter(sensorName, categoryName);
+                                });
+                            });
                         }
                         if (Microsoft.Maps.WellKnownText) {
                             return this.updateMap(data, format);
@@ -32401,7 +32358,7 @@ var powerbi;
                                 switch (_b.label) {
                                     case 0:
                                         _a = this;
-                                        return [4 /*yield*/, Promise.all(data.map(function (sensorData) { return _this.drawSensor(sensorData, format, _this.map); }))];
+                                        return [4 /*yield*/, Promise.all(data.map(function (sensorData) { return _this.drawSensor(sensorData, format); }))];
                                     case 1:
                                         _a.sensorNodeModels = _b.sent();
                                         return [2 /*return*/];
@@ -32409,37 +32366,43 @@ var powerbi;
                             });
                         });
                     };
-                    BingMapController.prototype.drawSensor = function (sensorData, format, map) {
+                    BingMapController.prototype.drawSensor = function (sensorData, format) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var node, label, tooltip, sensorNode;
+                            var _this = this;
+                            var node, label, categoryFilter, category;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         node = null;
                                         label = null;
-                                        tooltip = null;
-                                        return [4 /*yield*/, this.nodeService.drawCircleNode(sensorData, format.sensor)];
+                                        categoryFilter = this.categoryNames.filter(function (category) {
+                                            return _this.filterDictionary[category.name]
+                                                && _this.filterDictionary[category.name].filter(function (f) { return f === sensorData.value; }).length;
+                                        });
+                                        if (!(categoryFilter && categoryFilter.length)) return [3 /*break*/, 2];
+                                        category = categoryFilter.shift();
+                                        return [4 /*yield*/, this.nodeService.drawCircleNode(sensorData, category.format, category.name)];
                                     case 1:
-                                        //NOTE: A
                                         node = _a.sent();
                                         this.map.entities.add(node);
-                                        if (!format.sensorLabel.show) return [3 /*break*/, 3];
+                                        return [3 /*break*/, 4];
+                                    case 2: return [4 /*yield*/, this.nodeService.drawCircleNode(sensorData, format.sensor)];
+                                    case 3:
+                                        node = _a.sent();
+                                        this.map.entities.add(node);
+                                        _a.label = 4;
+                                    case 4:
+                                        if (!format.sensorLabel.show) return [3 /*break*/, 6];
                                         return [4 /*yield*/, this.titleService.draw(sensorData, format.sensorLabel)];
-                                    case 2:
+                                    case 5:
                                         label = _a.sent();
                                         this.map.entities.add(label);
-                                        _a.label = 3;
-                                    case 3:
-                                        sensorNode = {
+                                        _a.label = 6;
+                                    case 6: return [2 /*return*/, {
                                             data: sensorData,
                                             label: label,
-                                            node: node,
-                                            tooltip: tooltip
-                                        };
-                                        // if (format.tooltip.show) {
-                                        //     await this.tooltipService.add(sensorNode);
-                                        // }
-                                        return [2 /*return*/, sensorNode];
+                                            node: node
+                                        }];
                                 }
                             });
                         });
@@ -32467,6 +32430,83 @@ var powerbi;
                                 || d.name !== _this.categoryNames[i].name;
                         });
                         return !differentData.length;
+                    };
+                    BingMapController.prototype.updateSensorsFilter = function (categoryName, removeSensorFromfilter) {
+                        if (!this.filterDictionary[categoryName]) {
+                            return;
+                        }
+                        var data = this.filterDictionary[categoryName].map(function (sensor) {
+                            return {
+                                sensorName: sensor,
+                                categoryName: categoryName
+                            };
+                        });
+                        var columnFilter = this.rowContainer
+                            .select("div#" + categoryName + ".col");
+                        columnFilter.select("ul").remove();
+                        if (!data || !data.length) {
+                            return;
+                        }
+                        var list = columnFilter.append("ul")
+                            .classed("list-group list-group-flush", true);
+                        var liElement = list.selectAll('li')
+                            .data(data)
+                            .enter()
+                            .append("li")
+                            .classed('list-group-item list-group-item-action', true)
+                            .on("click", function (c) {
+                            debugger;
+                            removeSensorFromfilter(c.sensorName, c.categoryName);
+                            this.remove();
+                        })
+                            .append("div")
+                            .classed('checkbox-group', true);
+                        liElement.append("input")
+                            .attr("checked", true)
+                            .attr("type", "checkbox")
+                            .attr("id", function (d, i) { return categoryName + i; });
+                        liElement.append("label")
+                            .attr('for', function (d, i) { return categoryName + i; })
+                            .text(function (d) {
+                            return " " + d.sensorName;
+                        });
+                    };
+                    BingMapController.prototype.removeSensorFromfilter = function (sensorName, categoryName) {
+                        if (!this.filterDictionary[categoryName]) {
+                            return;
+                        }
+                        this.filterDictionary[categoryName] = this.filterDictionary[categoryName].filter(function (f) { return f !== sensorName; });
+                        if (!this.filterDictionary[categoryName].length) {
+                            this.filterTarget = this.filterTarget.filter(function (f) { return f.column !== categoryName; });
+                        }
+                        this.filterData();
+                    };
+                    BingMapController.prototype.drawContainerFilter = function () {
+                        this.rowContainer.html('');
+                        var column = this.rowContainer
+                            .selectAll('div')
+                            .data(this.categoryNames)
+                            .enter()
+                            .append("div")
+                            .classed('col', true)
+                            .attr('id', function (d) {
+                            return d.name;
+                        });
+                        var header = column
+                            .append("div")
+                            .classed('card', true)
+                            .append("div")
+                            .classed('card-header text-center', true)
+                            .append("h6")
+                            .classed('mb-0', true);
+                        header.append('i')
+                            .attr('class', function (d) {
+                            return d.icon;
+                        });
+                        header.append('span')
+                            .text(function (d) {
+                            return " " + d.name;
+                        });
                     };
                     return BingMapController;
                 }());
@@ -32565,24 +32605,12 @@ var powerbi;
                             _this.removePopupMenu();
                             var event = e;
                             var shape = event.primitive;
-                            var host = _this.host;
                             if (shape instanceof Microsoft.Maps.Pushpin && !shape.metadata.categoryId) {
                                 _this.showPopupMenu(event);
                                 _this.menuItem.on('click', function (d) {
                                     menuFunction(d, shape);
                                     document.getElementById('popupmenu').style.display = 'none';
                                 });
-                                // this.menuItem.on('click', function (d) {
-                                //     console.log(shape);
-                                //     //map.entities.remove(shape);
-                                //     let target = {
-                                //         column: d.column,
-                                //         table: d.table
-                                //     };
-                                // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [shape.metadata.nodeId]);
-                                // host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
-                                //     document.getElementById('popupmenu').style.display = 'none';
-                                // });
                             }
                         });
                     };
@@ -32602,79 +32630,6 @@ var powerbi;
         })(visual = extensibility.visual || (extensibility.visual = {}));
     })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
 })(powerbi || (powerbi = {}));
-// declare var loadMap;
-// class MapController {
-//     private _div: HTMLDivElement;
-//     private _map: Microsoft.Maps.Map;
-//     private _format: VisualFormat;
-//     private _nodesData: PointDataModel[];
-//     private _tooltipService: TooltipService;
-//     
-//     private _contextMenu: ContextMenuService;
-//     constructor(div: HTMLDivElement, data: MapViewModel[], format: VisualFormat) {
-//         this._div = div;
-//         this._format = format;
-//         
-//         loadMap = () => {
-//             this._tooltipService = new TooltipService(this._map);
-//             this._contextMenu = new ContextMenuService(this._map);
-//             this.drawMap(data, format)
-//         }
-//     }
-//     public drawMap(data: MapViewModel[], format: VisualFormat) {
-//         if (Microsoft.Maps.WellKnownText) {
-//             return this.reDrawMap(data, format);
-//         }
-//         else {
-//             Microsoft.Maps.loadModule('Microsoft.Maps.WellKnownText', () => {
-//                 return this.reDrawMap(data, format);
-//             });
-//         }
-//     }
-//     async reDrawMap(data: MapViewModel[], format: VisualFormat) {
-//         this._format = format;
-//         this.resetMap();
-//         await Promise.all([
-//             //this.restyleMap(format.mapLayers),
-//             this.drawSensors(data, format)]);
-//         await Promise.all([
-//             this.drawSensorsLabel(),
-//             this.setBestView(),
-//             this.drawTooltip(),
-//             //  this.drawContextMenu()
-//         ]);
-//     }
-//     async drawSensors(data: MapViewModel[], format: VisualFormat) {
-//         this._nodesData = await this._nodeService.drawCircleNode(data, format.sensor);
-//         this._map.entities.add(this._nodesData.map(x => x.point));
-//     }
-//     async drawTooltip() {
-//         if (this._format.tooltip.show) {
-//             this._nodesData.filter(model => model.data.SensorName).forEach(model => {
-//                 const sensorLabels = model.data.DataLabels.filter(l => l.columnName == ColumnView.SensorName);
-//                 if (sensorLabels.length) {
-//                     this._tooltipService.add(model.point, sensorLabels[0].toString());
-//                 }
-//             });
-//         }
-//     }
-//     async drawSensorsLabel() {
-//         if (this._format.sensorLabel.show) {
-//             const lables = await this._titleService.draw(this._nodesData, this._format.sensorLabel);
-//             this._map.entities.add(lables);
-//         }
-//     }
-//     async resetMap() {
-//         this._map.entities.clear();
-//     }
-//     async setBestView() {
-//         const nodes = this._nodesData.map(x => x.point)
-//         this._map.setView({
-//             bounds: Microsoft.Maps.SpatialMath.Geometry.bounds(nodes),
-//             padding: 5
-//         });
-//     }
-// } 
 var powerbi;
 (function (powerbi) {
     var extensibility;
@@ -32689,18 +32644,19 @@ var powerbi;
                         this.strokeWidthDefault = 1;
                         this.svgSize = 10;
                     }
-                    NodeService.prototype.drawCircleNode = function (dataView, format) {
+                    NodeService.prototype.drawCircleNode = function (dataView, format, categoryId) {
+                        if (categoryId === void 0) { categoryId = null; }
                         return __awaiter(this, void 0, void 0, function () {
                             var gradientColor, gradientColorLine, circle;
                             return __generator(this, function (_a) {
                                 gradientColor = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.RgbColor.hexToRgb(format.color, format.transparency / 100).toString();
                                 gradientColorLine = format.showline ? mapSlicerB1146AB518024EEF8B19C181A7ECC49E.RgbColor.pickHex(format.color).toString() : gradientColor;
                                 circle = this.CreateCircle(gradientColor, gradientColorLine);
-                                return [2 /*return*/, this.CreatePushpin(dataView, circle)];
+                                return [2 /*return*/, this.CreatePushpin(dataView, circle, categoryId)];
                             });
                         });
                     };
-                    NodeService.prototype.CreatePushpin = function (node, svg) {
+                    NodeService.prototype.CreatePushpin = function (node, svg, categoryId) {
                         var point = Microsoft.Maps.WellKnownText.read("" + node.location);
                         if (point) {
                             point.setOptions({
@@ -32709,7 +32665,7 @@ var powerbi;
                             });
                             point.metadata = {
                                 nodeId: node.value,
-                                categoryId: null
+                                categoryId: categoryId
                             };
                         }
                         return point;
@@ -32892,6 +32848,7 @@ var powerbi;
                                 text = sensorNode.data.value.toString();
                                 if (text && text !== '') {
                                     Microsoft.Maps.Events.addHandler(sensorNode.node, 'mouseover', function (e) {
+                                        debugger;
                                         _this.tooltip.setOptions({ visible: false });
                                         //Set the infobox options with the metadata of the pushpin.
                                         _this.tooltip.setOptions({
@@ -32916,63 +32873,6 @@ var powerbi;
         })(visual = extensibility.visual || (extensibility.visual = {}));
     })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
 })(powerbi || (powerbi = {}));
-var powerbi;
-(function (powerbi) {
-    var extensibility;
-    (function (extensibility) {
-        var visual;
-        (function (visual) {
-            var mapSlicerB1146AB518024EEF8B19C181A7ECC49E;
-            (function (mapSlicerB1146AB518024EEF8B19C181A7ECC49E) {
-                var DataLabel = (function () {
-                    function DataLabel() {
-                        this.labels = [];
-                    }
-                    DataLabel.prototype.push = function (item) {
-                        this.labels.push(item);
-                    };
-                    DataLabel.prototype.toString = function (columnName) {
-                        var data = this.labels.filter(function (x) { return x.columnName === columnName; });
-                        if (data.length) {
-                            return data[0].fieldName + " : " + data[0].value.toString();
-                        }
-                        return '';
-                    };
-                    return DataLabel;
-                }());
-                mapSlicerB1146AB518024EEF8B19C181A7ECC49E.DataLabel = DataLabel;
-            })(mapSlicerB1146AB518024EEF8B19C181A7ECC49E = visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E || (visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E = {}));
-        })(visual = extensibility.visual || (extensibility.visual = {}));
-    })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
-})(powerbi || (powerbi = {}));
-var ColumnView = (function () {
-    function ColumnView() {
-    }
-    ColumnView.toArray = function () {
-        return [
-            this.sensorName,
-            this.sensor,
-            this.fromName,
-            this.fromSensor,
-            this.toName,
-            this.toSensor
-        ];
-    };
-    return ColumnView;
-}());
-ColumnView.sensorName = "sensorName";
-ColumnView.sensor = "sensor";
-ColumnView.fromName = "fromName";
-ColumnView.fromSensor = "fromSensor";
-ColumnView.toName = "toName";
-ColumnView.toSensor = "toSensor";
-var MapViewModel = (function () {
-    function MapViewModel() {
-        this.SensorName = "";
-        this.Location = "";
-    }
-    return MapViewModel;
-}());
 /*
  *  Power BI Visualizations
  *
@@ -33016,8 +32916,7 @@ var powerbi;
                         _this.sensor = new SensorSettings("01B8AA", true, 50);
                         _this.sensorLabel = new SensorLabelSettings();
                         _this.fromSensor = new SensorSettings("0052FF", true, 50);
-                        _this.toSensor = new SensorSettings("3D68B8", true, 50);
-                        _this.tooltip = new TooltipSettings();
+                        _this.toSensor = new SensorSettings("FF8C00", true, 50);
                         return _this;
                     }
                     return VisualSettings;
@@ -33032,9 +32931,6 @@ var powerbi;
                 mapSlicerB1146AB518024EEF8B19C181A7ECC49E.MapLayerSettings = MapLayerSettings;
                 var SensorSettings = (function () {
                     function SensorSettings(color, showline, transparency) {
-                        this.color = "01B8AA";
-                        this.showline = true;
-                        this.transparency = 50;
                         this.color = color;
                         this.showline = showline;
                         this.transparency = transparency;
@@ -33053,16 +32949,6 @@ var powerbi;
                     return SensorLabelSettings;
                 }());
                 mapSlicerB1146AB518024EEF8B19C181A7ECC49E.SensorLabelSettings = SensorLabelSettings;
-                // export class SensorSettings {
-                //   public color: string = "0052FF";
-                //   public showline: boolean = true;
-                //   public transparency: number = 50;
-                // }
-                // export class ToSensorSettings {
-                //   public color: string = "3D68B8";
-                //   public showline: boolean = true;
-                //   public transparency: number = 50;
-                // }
                 var TooltipSettings = (function () {
                     function TooltipSettings() {
                         this.show = true;
@@ -33106,7 +32992,7 @@ var powerbi;
                             if (!dataValue) {
                                 continue;
                             }
-                            var _loop_2 = function (i, len) {
+                            var _loop_1 = function (i, len) {
                                 var model = {
                                     location: dataValue.values[i],
                                     value: category.values[i],
@@ -33120,7 +33006,7 @@ var powerbi;
                                 }
                             };
                             for (var i = 0, len = Math.max(category.values.length, dataValue.values.length); i < len; i++) {
-                                _loop_2(i, len);
+                                _loop_1(i, len);
                             }
                         }
                         return models;
@@ -33131,7 +33017,7 @@ var powerbi;
                             !dataView.categorical.categories ||
                             !dataView.categorical.categories[0] ||
                             !dataView.categorical.categories[0].source) {
-                            return;
+                            return [];
                         }
                         var categoryFormats = [visualSettings.fromSensor, visualSettings.toSensor];
                         var categoryIcons = this.getCategoryIcon();
@@ -33146,39 +33032,6 @@ var powerbi;
                                 table: c.source.queryName.substr(0, c.source.queryName.indexOf('.'))
                             };
                         });
-                    };
-                    ConverterHelper.ConvertTableToModel = function (dv, host) {
-                        var viewModel = [];
-                        if (!dv || !dv[0] || !dv[0].table || !dv[0].table.columns || !dv[0].table.rows) {
-                            return viewModel;
-                        }
-                        var _a = dv[0].table, columns = _a.columns, rows = _a.rows;
-                        var columnIndexes = columns.map(function (c) { return __assign({}, c.roles, { index: c.index, fieldName: c.displayName }); });
-                        var identities = this.getSelectionIds(dv[0], host);
-                        viewModel = rows.map(function (row, idx) {
-                            var data = {};
-                            var dataLabels = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.DataLabel();
-                            ColumnView.toArray().forEach(function (columnName) {
-                                var col = columnIndexes.find(function (x) { return x[columnName]; });
-                                if (col) {
-                                    data[columnName] = row[col.index];
-                                    dataLabels.push({
-                                        columnName: columnName,
-                                        fieldName: col.fieldName,
-                                        value: row[col.index]
-                                    });
-                                }
-                            });
-                            data['dataLabels'] = dataLabels;
-                            var categoryColumn = {
-                                source: dv[0].table.columns[1],
-                                values: null,
-                                identity: [dv[0].table.identity[idx]]
-                            };
-                            data['selectionId'] = identities[idx];
-                            return data;
-                        });
-                        return viewModel;
                     };
                     ConverterHelper.getSelectionIds = function (dataView, host) {
                         return dataView.table.identity.map(function (identity, idx) {
@@ -33199,202 +33052,6 @@ var powerbi;
         })(visual = extensibility.visual || (extensibility.visual = {}));
     })(extensibility = powerbi.extensibility || (powerbi.extensibility = {}));
 })(powerbi || (powerbi = {}));
-// module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
-//     export interface TooltipEventArgs<TData> {
-//         data: TData;
-//         coordinates: number[];
-//         elementCoordinates: number[];
-//         context: HTMLElement;
-//         isTouchEvent: boolean;
-//     }
-//     export interface ITooltipServiceWrapper {
-//         addTooltip<T>(
-//             selection: d3.Selection<Element>,
-//             getTooltipInfoDelegate: (args: TooltipEventArgs<T>) => VisualTooltipDataItem[],
-//             getDataPointIdentity: (args: TooltipEventArgs<T>) => ISelectionId,
-//             reloadTooltipDataOnMouseMove?: boolean): void;
-//         hide(): void;
-//     }
-//     const DefaultHandleTouchDelay = 1000;
-//     export function createTooltipServiceWrapper(tooltipService: ITooltipService, rootElement: Element, handleTouchDelay: number = DefaultHandleTouchDelay): ITooltipServiceWrapper {
-//         return new TooltipServiceWrapper(tooltipService, rootElement, handleTouchDelay);
-//     }
-//     class TooltipServiceWrapper implements ITooltipServiceWrapper {
-//         private handleTouchTimeoutId: number;
-//         private visualHostTooltipService: ITooltipService;
-//         private rootElement: Element;
-//         private handleTouchDelay: number;
-//         constructor(tooltipService: ITooltipService, rootElement: Element, handleTouchDelay: number) {
-//             this.visualHostTooltipService = tooltipService;
-//             this.handleTouchDelay = handleTouchDelay;
-//             this.rootElement = rootElement;
-//         }
-//         public addTooltip<T>(
-//             selection: d3.Selection<Element>,
-//             getTooltipInfoDelegate: (args: TooltipEventArgs<T>) => VisualTooltipDataItem[],
-//             getDataPointIdentity: (args: TooltipEventArgs<T>) => ISelectionId,
-//             reloadTooltipDataOnMouseMove?: boolean): void {
-//             if (!selection || !this.visualHostTooltipService.enabled()) {
-//                 return;
-//             }
-//             let rootNode = this.rootElement;
-//             // Mouse events
-//             selection.on("mouseover.tooltip", () => {
-//                 // Ignore mouseover while handling touch events
-//                 if (!this.canDisplayTooltip(d3.event))
-//                     return;
-//                 let tooltipEventArgs = this.makeTooltipEventArgs<T>(rootNode, true, false);
-//                 if (!tooltipEventArgs)
-//                     return;
-//                 let tooltipInfo = getTooltipInfoDelegate(tooltipEventArgs);
-//                 if (tooltipInfo == null)
-//                     return;
-//                 let selectionId = getDataPointIdentity(tooltipEventArgs);
-//                 this.visualHostTooltipService.show({
-//                     coordinates: tooltipEventArgs.coordinates,
-//                     isTouchEvent: false,
-//                     dataItems: tooltipInfo,
-//                     identities: selectionId ? [selectionId] : [],
-//                 });
-//             });
-//             selection.on("mouseout.tooltip", () => {
-//                 this.visualHostTooltipService.hide({
-//                     isTouchEvent: false,
-//                     immediately: false,
-//                 });
-//             });
-//             selection.on("mousemove.tooltip", () => {
-//                 // Ignore mousemove while handling touch events
-//                 if (!this.canDisplayTooltip(d3.event))
-//                     return;
-//                 let tooltipEventArgs = this.makeTooltipEventArgs<T>(rootNode, true, false);
-//                 if (!tooltipEventArgs)
-//                     return;
-//                 let tooltipInfo: VisualTooltipDataItem[];
-//                 if (reloadTooltipDataOnMouseMove) {
-//                     tooltipInfo = getTooltipInfoDelegate(tooltipEventArgs);
-//                     if (tooltipInfo == null)
-//                         return;
-//                 }
-//                 let selectionId = getDataPointIdentity(tooltipEventArgs);
-//                 this.visualHostTooltipService.move({
-//                     coordinates: tooltipEventArgs.coordinates,
-//                     isTouchEvent: false,
-//                     dataItems: tooltipInfo,
-//                     identities: selectionId ? [selectionId] : [],
-//                 });
-//             });
-//             // --- Touch events ---
-//             let touchStartEventName: string = TooltipServiceWrapper.touchStartEventName();
-//             let touchEndEventName: string = TooltipServiceWrapper.touchEndEventName();
-//             let isPointerEvent: boolean = TooltipServiceWrapper.usePointerEvents();
-//             selection.on(touchStartEventName + '.tooltip', () => {
-//                 this.visualHostTooltipService.hide({
-//                     isTouchEvent: true,
-//                     immediately: true,
-//                 });
-//                 let tooltipEventArgs = this.makeTooltipEventArgs<T>(rootNode, isPointerEvent, true);
-//                 if (!tooltipEventArgs)
-//                     return;
-//                 let tooltipInfo = getTooltipInfoDelegate(tooltipEventArgs);
-//                 let selectionId = getDataPointIdentity(tooltipEventArgs);
-//                 this.visualHostTooltipService.show({
-//                     coordinates: tooltipEventArgs.coordinates,
-//                     isTouchEvent: true,
-//                     dataItems: tooltipInfo,
-//                     identities: selectionId ? [selectionId] : [],
-//                 });
-//             });
-//             selection.on(touchEndEventName + '.tooltip', () => {
-//                 this.visualHostTooltipService.hide({
-//                     isTouchEvent: true,
-//                     immediately: false,
-//                 });
-//                 if (this.handleTouchTimeoutId)
-//                     clearTimeout(this.handleTouchTimeoutId);
-//                 // At the end of touch action, set a timeout that will let us ignore the incoming mouse events for a small amount of time
-//                 // TODO: any better way to do this?
-//                 this.handleTouchTimeoutId = setTimeout(() => {
-//                     this.handleTouchTimeoutId = undefined;
-//                 }, this.handleTouchDelay);
-//             });
-//         }
-//         public hide(): void {
-//             this.visualHostTooltipService.hide({ immediately: true, isTouchEvent: false });
-//         }
-//         private makeTooltipEventArgs<T>(rootNode: Element, isPointerEvent: boolean, isTouchEvent: boolean): TooltipEventArgs<T> {
-//             let target = <HTMLElement>(<Event>d3.event).target;
-//             let data: T = d3.select(target).datum();
-//             let mouseCoordinates = this.getCoordinates(rootNode, isPointerEvent);
-//             let elementCoordinates: number[] = this.getCoordinates(target, isPointerEvent);
-//             let tooltipEventArgs: TooltipEventArgs<T> = {
-//                 data: data,
-//                 coordinates: mouseCoordinates,
-//                 elementCoordinates: elementCoordinates,
-//                 context: target,
-//                 isTouchEvent: isTouchEvent
-//             };
-//             return tooltipEventArgs;
-//         }
-//         private canDisplayTooltip(d3Event: any): boolean {
-//             let canDisplay: boolean = true;
-//             let mouseEvent: MouseEvent = <MouseEvent>d3Event;
-//             if (mouseEvent.buttons !== undefined) {
-//                 // Check mouse buttons state
-//                 let hasMouseButtonPressed = mouseEvent.buttons !== 0;
-//                 canDisplay = !hasMouseButtonPressed;
-//             }
-//             // Make sure we are not ignoring mouse events immediately after touch end.
-//             canDisplay = canDisplay && (this.handleTouchTimeoutId == null);
-//             return canDisplay;
-//         }
-//         private getCoordinates(rootNode: Element, isPointerEvent: boolean): number[] {
-//             let coordinates: number[];
-//             if (isPointerEvent) {
-//                 // copied from d3_eventSource (which is not exposed)
-//                 let e = <any>d3.event, s;
-//                 while (s = e.sourceEvent) e = s;
-//                 let rect = rootNode.getBoundingClientRect();
-//                 coordinates = [e.clientX - rect.left - rootNode.clientLeft, e.clientY - rect.top - rootNode.clientTop];
-//             }
-//             else {
-//                 let touchCoordinates = d3.touches(rootNode);
-//                 if (touchCoordinates && touchCoordinates.length > 0) {
-//                     coordinates = touchCoordinates[0];
-//                 }
-//             }
-//             return coordinates;
-//         }
-//         private static touchStartEventName(): string {
-//             let eventName: string = "touchstart";
-//             if (window["PointerEvent"]) {
-//                 // IE11
-//                 eventName = "pointerdown";
-//             }
-//             return eventName;
-//         }
-//         private static touchMoveEventName(): string {
-//             let eventName: string = "touchmove";
-//             if (window["PointerEvent"]) {
-//                 // IE11
-//                 eventName = "pointermove";
-//             }
-//             return eventName;
-//         }
-//         private static touchEndEventName(): string {
-//             let eventName: string = "touchend";
-//             if (window["PointerEvent"]) {
-//                 // IE11
-//                 eventName = "pointerup";
-//             }
-//             return eventName;
-//         }
-//         private static usePointerEvents(): boolean {
-//             let eventName = TooltipServiceWrapper.touchStartEventName();
-//             return eventName === "pointerdown" || eventName === "MSPointerDown";
-//         }
-//     }
-// } 
 /*
  *  Power BI Visual CLI
  *
@@ -33432,12 +33089,8 @@ var powerbi;
                 var tooltip = powerbi.extensibility.utils.tooltip;
                 var Visual = (function () {
                     function Visual(options) {
-                        this.categoryNames = [];
                         this.host = options.host;
-                        this.selectionIdBuilder = options.host.createSelectionIdBuilder();
-                        this.selectionManager = options.host.createSelectionManager();
                         this.tooltipServiceWrapper = tooltip.createTooltipServiceWrapper(this.host.tooltipService, options.element);
-                        this.mapController = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.BingMapController(this.selectionManager, this.host, options.element);
                         this.divMap = d3.select(options.element)
                             .append('div')
                             .classed('map', true)
@@ -33446,23 +33099,20 @@ var powerbi;
                             .append('div')
                             .classed('container', true)
                             .attr({ id: "container" });
-                        this.rowContainer = this.containerFilter
-                            .append('div')
-                            .classed('row', true);
+                        this.mapController = new mapSlicerB1146AB518024EEF8B19C181A7ECC49E.BingMapController(this.host, options.element, this.containerFilter);
                         this.loadedMap = false;
                     }
                     Visual.prototype.update = function (options) {
                         var _this = this;
                         this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
                         if (!this.loadedMap) {
-                            BingMapsLoader.load(this.divMap.node(), this.visualSettings)
+                            BingMapsLoader.load(this.divMap.node(), this.visualSettings.mapLayers)
                                 .then(function (res) {
                                 _this.map = res;
                                 _this.loadedMap = true;
                                 _this.mapController.setMap(_this.map);
                                 _this.drawMap(options);
                             });
-                            return;
                         }
                         else {
                             this.drawMap(options);
@@ -33470,6 +33120,7 @@ var powerbi;
                     };
                     Visual.prototype.drawMap = function (options) {
                         var height = options.viewport.height;
+                        debugger;
                         try {
                             var dataView = options && options.dataViews && options.dataViews[0];
                             this.nodeModels = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.Convert(dataView, this.host);
@@ -33479,77 +33130,16 @@ var powerbi;
                                 var containerHeight = height - mapHeight;
                                 this.divMap.style("height", mapHeight + 'px');
                                 this.containerFilter.style("height", containerHeight + 'px');
-                                if (this.isCategoryNameUpdates(categoryNames)) {
-                                    this.categoryNames = categoryNames;
-                                    this.drawContainerFilter(options);
-                                }
                             }
                             else {
-                                this.divMap.style("height", height);
+                                this.divMap.style("height", height + 'px');
+                                this.containerFilter.style("height", '0px');
                             }
-                            this.mapController.drawMap(categoryNames, this.nodeModels || [], this.visualSettings);
+                            this.mapController.drawMap(categoryNames, this.nodeModels, this.visualSettings, options.jsonFilters);
                         }
                         catch (e) {
                             console.error("Couldn't draw map", e);
                         }
-                        // let selectionId = this.viewModel[0].selectionId;
-                        // let selectionManager = this.selectionManager;
-                        // this.selectionManager.select(selectionId).then((ids: ISelectionId[]) => {
-                        //     //called when setting the selection has been completed successfully
-                        // });
-                        // let categories =  options.dataViews[0].table.columns[0];
-                        //  let target =  {
-                        //     column: categories.displayName,
-                        //     table: categories.queryName.substr(0, categories.queryName.indexOf('.')),
-                        // };
-                        // let filter: IBasicFilter = new window['powerbi-models'].BasicFilter(target, "In", [1038]);
-                        // this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);
-                        // this.divMap.on('click', () => {
-                        //     selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
-                        //                 console.log(ids);
-                        //              }).catch(e => console.error(e))
-                        // });
-                        //  Microsoft.Maps.Events.addHandler(this.map, 'rightclick', function (e: Microsoft.Maps.IMouseEventArgs)  {
-                        //     console.log('marker identity is ');           
-                        //     // selectionManager.select(selectionId, false).then((ids: ISelectionId[]) =>{
-                        //     //      console.log(ids);
-                        //     //  }).catch(e => console.error(e));                     
-                        //  });          
-                    };
-                    Visual.prototype.drawContainerFilter = function (options) {
-                        this.rowContainer.html('');
-                        var column = this.rowContainer
-                            .selectAll('div')
-                            .data(this.categoryNames)
-                            .enter()
-                            .append("div")
-                            .classed('col', true);
-                        var header = column
-                            .append("div")
-                            .classed('card', true)
-                            .append("div")
-                            .classed('card-header text-center', true)
-                            .append("h6")
-                            .classed('mb-0', true);
-                        header.append('i')
-                            .attr('class', function (d) {
-                            return d.icon;
-                        });
-                        header.append('span')
-                            .text(function (d) {
-                            return " " + d.name;
-                        });
-                    };
-                    Visual.prototype.isCategoryNameUpdates = function (categories) {
-                        var _this = this;
-                        if (this.categoryNames.length !== categories.length) {
-                            return true;
-                        }
-                        var differentData = categories.filter(function (d, i) {
-                            d.icon !== _this.categoryNames[i].icon
-                                || d.name !== _this.categoryNames[i].name;
-                        });
-                        return !differentData.length;
                     };
                     Visual.parseSettings = function (dataView) {
                         return mapSlicerB1146AB518024EEF8B19C181A7ECC49E.VisualSettings.parse(dataView);
@@ -33577,7 +33167,7 @@ var powerbi;
         (function (plugins) {
             plugins.mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG = {
                 name: 'mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG',
-                displayName: 'MapSlicer',
+                displayName: 'Map slicer',
                 class: 'Visual',
                 version: '1.0.0',
                 apiVersion: '2.3.0',

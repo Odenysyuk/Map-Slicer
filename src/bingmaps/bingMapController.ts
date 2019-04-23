@@ -9,7 +9,6 @@ module powerbi.extensibility.visual {
 
         private map: Microsoft.Maps.Map;
         private mapType: MapTypeService;
-        private selectionManager: ISelectionManager;
         private nodeService: NodeService;
         private titleService: TitleSevice;
         private tooltipService: TooltipService;
@@ -17,11 +16,11 @@ module powerbi.extensibility.visual {
         private host: IVisualHost;
         private contextMenu: ContextMenuService;
         private categoryNames: CategoryModel[] = [];
-        private filterDictionary: {[key:string]:ITupleElementValue[]}
-        private filterTarget: ITupleFilterTarget;
+        private filterDictionary: { [key: string]: PrimitiveValue[] }
+        private filterTarget: IFilterColumnTarget[];
+        private rowContainer: d3.Selection<HTMLElement>;
 
-        constructor(selectionManager: ISelectionManager, host: IVisualHost, rootElement: HTMLElement) {
-            this.selectionManager = selectionManager;
+        constructor(host: IVisualHost, rootElement: HTMLElement, containerFilter: d3.Selection<HTMLElement>) {
             this.host = host;
             this.nodeService = new NodeService();
             this.mapType = new MapTypeService();
@@ -30,104 +29,67 @@ module powerbi.extensibility.visual {
             this.sensorNodeModels = [];
             this.filterDictionary = {};
             this.filterTarget = [];
+            this.rowContainer = containerFilter
+                .append('div')
+                .classed('row', true);
         }
 
         public setMap(map: Microsoft.Maps.Map) {
             this.map = map;
             this.tooltipService = new TooltipService(map);
-            this.contextMenu.handleMap(this.map, (category: CategoryModel, shape: Microsoft.Maps.IPrimitive)=>{
+            this.contextMenu.handleMap(this.map, (category: CategoryModel, shape: Microsoft.Maps.Pushpin) => {
 
-                if(!this.filterDictionary[category.name]){
+                if (!this.filterDictionary[category.name]) {
                     this.filterDictionary[category.name] = [];
                 }
-                this.filterDictionary[category.name].push({value:shape.metadata.nodeId});
 
-                const existFilter = this.filterTarget.filter((f:IFilterColumnTarget) => f.table == category.table && f.column == category.column);
-                if (existFilter.length === 0) {
-                    this.filterTarget.push({
-                        column: category.column,
-                        table: category.table
-                    });
+                this.filterDictionary[category.name].push(shape.metadata.nodeId);
+
+                let existFilter = this.filterTarget.filter(f => f.column == category.column);
+
+                if (!existFilter.length) {
+                    this.filterTarget.push({ column: category.column, table: category.table });
                 }
 
-                debugger;
-                let values = this.filterTarget.map((f:IFilterColumnTarget) => this.filterDictionary[f.column]);  
-                let tupleValues = this.cartesianJoin(values);
-
-                // values = [
-                //     [
-                //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
-                //         {
-                //             value: null // the value for `Team` column of `DataTable` table
-                //         },
-                //         {
-                //             value: 1020 // the value for `Value` column of `DataTable` table
-                //         }
-                //     ],
-                //     [
-                //         // the 1st column combination value (aka column tuple/vector value) that the filter will pass through
-                //         {
-                //             value:1040 // the value for `Team` column of `DataTable` table
-                //         },
-                //         {
-                //             value: 1002 // the value for `Value` column of `DataTable` table
-                //         }
-                //     ],
-
-                // ];
-
- 
-                let filter: ITupleFilter =
-                {
-                    $schema: "http://powerbi.com/product/schema#tuple",
-                    filterType: window['powerbi-models'].FilterType.Tuple,
-                    operator: "In",
-                    target: this.filterTarget,
-                    values: tupleValues
-                }
-                this.host.applyJsonFilter(filter, "general", "filter", FilterAction.merge);     
+                this.filterData();
             });
         }
 
-
-        private  cartesianObject(a: ITupleElementValue[], b: ITupleElementValue[]): ITupleElementValue[][] {
-            return  [].concat(...a.map(a2 => b.map(b2 => [].concat(a2, b2))));
+        private filterData() {
+            let filters = this.filterTarget.map(filterTarget => new window['powerbi-models'].BasicFilter(filterTarget, "In", this.filterDictionary[filterTarget.column]));
+            this.host.applyJsonFilter(filters as IBasicFilter[], "general", "filter", FilterAction.merge);
         }
 
-
-        private cartesianJoin(values: ITupleElementValue[][]): ITupleElementValue[][]{             
-            let cartesianArray:ITupleElementValue[][] = [];
+        public drawMap(categoryNames: CategoryModel[], data: NodeModel[], format: VisualSettings, jsonFilter?: IFilter[]) {
 
             debugger;
-            for (let index = 0; index < values.length; index++) {
+            if (this.isCategoryNameUpdates(categoryNames)) {
+                const basicFilters = jsonFilter as ISliceFilter[];   
+                this.filterTarget = [];
+                this.filterDictionary = {};
 
-                if (!values[index] || values[index].length === 0) {
-                    return cartesianArray;  
+                if (basicFilters || basicFilters.length) {                    
+                    const extractFilter =  basicFilters.filter(f => categoryNames.filter(c => c.column == f.target.column && c.table == f.target.table).length);
+                    
+                    if(extractFilter.length !== basicFilters.length){
+                        this.host.applyJsonFilter(extractFilter, "general", "filter", FilterAction.merge);
+                        return;
+                    }
+         
+                    basicFilters.forEach(f => {
+                        this.filterTarget.push(f.target);
+                        this.filterDictionary[f.target.column] = f.values;
+                    });
                 }
-                else if(cartesianArray.length === 0){
-                    cartesianArray =  values[index].map(b => [].concat(b));   
-                }else{
-                    cartesianArray = [].concat(...cartesianArray.map(a2 => values[index].map(b2 => [].concat(a2, b2))));   
-                }    
-            }
 
-            console.log(cartesianArray);
-      
-            return cartesianArray;
-            // const [arrayFrom, ...arrayTo] = values;
-
-            // if (!arrayTo || arrayTo.length === 0) {
-            //     return arrayFrom.map(b => [].concat(b));     
-            // }
-
-            // return [].concat(... arrayFrom.map(a => arrayTo[0].map(b => [].concat(a, b)))); 
-        }
-
-        public drawMap(categoryNames: CategoryModel[], data: NodeModel[], format: VisualSettings) {
-
-            if(this.isCategoryNameUpdates(categoryNames)){
                 this.categoryNames = categoryNames;
                 this.contextMenu.draw(this.categoryNames);
+                this.drawContainerFilter();
+                this.categoryNames.forEach(category => {
+                    this.updateSensorsFilter(category.name, (sensorName: PrimitiveValue, categoryName: string) => {
+                        this.removeSensorFromfilter(sensorName, categoryName);
+                    });
+                });
             }
 
             if (Microsoft.Maps.WellKnownText) {
@@ -155,36 +117,38 @@ module powerbi.extensibility.visual {
         }
 
         async drawSensors(data: NodeModel[], format: VisualSettings) {
-            this.sensorNodeModels = await Promise.all(data.map(sensorData => this.drawSensor(sensorData, format, this.map)));
+            this.sensorNodeModels = await Promise.all(data.map(sensorData => this.drawSensor(sensorData, format)));
         }
 
-        async drawSensor(sensorData: NodeModel, format: VisualSettings, map: Microsoft.Maps.Map) {
+        async drawSensor(sensorData: NodeModel, format: VisualSettings) {
 
             let node = null;
             let label = null;
-            let tooltip = null;
 
-            //NOTE: A
-            node = await this.nodeService.drawCircleNode(sensorData, format.sensor);
-            this.map.entities.add(node);
+            const categoryFilter = this.categoryNames.filter(category => {
+                return this.filterDictionary[category.name]
+                    && this.filterDictionary[category.name].filter(f => f === sensorData.value).length;
+            });
 
-            if(format.sensorLabel.show){
-                label = await this.titleService.draw(sensorData, format.sensorLabel);
-                this.map.entities.add(label);
+            if (categoryFilter && categoryFilter.length) {
+                const category = categoryFilter.shift();
+                node = await this.nodeService.drawCircleNode(sensorData, category.format, category.name);
+                this.map.entities.add(node);
+            } else {
+                node = await this.nodeService.drawCircleNode(sensorData, format.sensor);
+                this.map.entities.add(node);
             }
 
-            const sensorNode = {
-                 data: sensorData,
-                 label: label,
-                 node: node,
-                 tooltip: tooltip
-            } as SensorNodeModel;
+            if (format.sensorLabel.show) {
+                label = await this.titleService.draw(sensorData, format.sensorLabel);
+                this.map.entities.add(label);       
+            }        
 
-            // if (format.tooltip.show) {
-            //     await this.tooltipService.add(sensorNode);
-            // }
-
-            return sensorNode;
+            return {
+                data: sensorData,
+                label: label,
+                node: node
+            } as SensorNodeModel;    
         }
 
         async setBestView() {
@@ -195,18 +159,114 @@ module powerbi.extensibility.visual {
             });
         }
 
-        private isCategoryNameUpdates(categories: CategoryModel[]) : boolean{
+        private isCategoryNameUpdates(categories: CategoryModel[]): boolean {
 
-            if(this.categoryNames.length !== categories.length){
+            if (this.categoryNames.length !== categories.length) {
                 return true;
             }
 
-            const differentData = categories.filter((d, i)=>{
+            const differentData = categories.filter((d, i) => {
                 d.icon !== this.categoryNames[i].icon
-                || d.name !== this.categoryNames[i].name
+                    || d.name !== this.categoryNames[i].name
             })
 
             return !differentData.length;
+        }
+
+        private updateSensorsFilter(categoryName: string, removeSensorFromfilter: (PrimitiveValue, string) => void) {
+
+            if (!this.filterDictionary[categoryName]) {
+                return;
+            }
+
+            const data = this.filterDictionary[categoryName].map(sensor => {
+                return {
+                    sensorName: sensor,
+                    categoryName: categoryName
+                }
+            });
+
+            let columnFilter = this.rowContainer
+                .select(`div#${categoryName}.col`);
+
+            columnFilter.select("ul").remove();
+
+            if (!data || !data.length) {
+                return;
+            }
+
+            let list = columnFilter.append("ul")
+                .classed("list-group list-group-flush", true);
+
+            let liElement = list.selectAll('li')
+                .data(data)
+                .enter()
+                .append("li")
+                .classed('list-group-item list-group-item-action', true)
+                .on("click", function (c) {
+                    debugger;
+                    removeSensorFromfilter(c.sensorName, c.categoryName);
+                    this.remove();
+                })
+                .append("div")
+                .classed('checkbox-group', true);
+
+
+            liElement.append("input")
+                .attr("checked", true)
+                .attr("type", "checkbox")
+                .attr("id", function (d, i) { return categoryName + i; })
+
+            liElement.append("label")
+                .attr('for', function (d, i) { return categoryName + i; })
+                .text(function (d) {
+                    return ` ${d.sensorName}`;
+                })
+        }
+
+        private removeSensorFromfilter(sensorName: PrimitiveValue, categoryName: string) {
+
+            if (!this.filterDictionary[categoryName]) {
+                return;
+            }
+
+            this.filterDictionary[categoryName] = this.filterDictionary[categoryName].filter(f => f !== sensorName);
+
+            if (!this.filterDictionary[categoryName].length) {
+                this.filterTarget = this.filterTarget.filter(f => f.column !== categoryName);
+            }
+
+            this.filterData();
+        }
+
+        private drawContainerFilter() {
+            this.rowContainer.html('');
+            let column = this.rowContainer
+                .selectAll('div')
+                .data(this.categoryNames)
+                .enter()
+                .append("div")
+                .classed('col', true)
+                .attr('id', function (d) {
+                    return d.name;
+                });
+
+            let header = column
+                .append("div")
+                .classed('card', true)
+                .append("div")
+                .classed('card-header text-center', true)
+                .append("h6")
+                .classed('mb-0', true);
+
+            header.append('i')
+                .attr('class', function (d) {
+                    return d.icon;
+                });
+            header.append('span')
+                .text(function (d) {
+                    return ` ${d.name}`;
+                });
         }
     }
 }

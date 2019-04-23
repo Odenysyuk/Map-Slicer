@@ -1,7 +1,7 @@
 {
   "visual": {
     "name": "mapSlicer",
-    "displayName": "MapSlicer",
+    "displayName": "Map slicer",
     "guid": "mapSlicerB1146AB518024EEF8B19C181A7ECC49E",
     "visualClassName": "Visual",
     "version": "1.0.0",

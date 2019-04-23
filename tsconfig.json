@@ -24,22 +24,15 @@
     "src/bingmaps/bingMapController.ts",
     "src/bingmaps/mapTypeService.ts",
     "src/bingmaps/contextMenuService.ts",
-    "src/bingmaps/mapController.ts",
     "src/bingmaps/nodeService.ts",
     "src/bingmaps/rgbColor.ts",
     "src/bingmaps/titleService.ts",
     "src/bingmaps/tooltipService.ts",
     "src/models/formatModel.ts",
-    "src/models/dataLabel.ts",
-    "src/models/columnView.ts",
-    "src/models/mapViewModel.ts",
-    "src/models/pointDataModel.ts",
     "src/models/sensorNodeModel.ts",
     "src/models/slicerMapModel.ts",
-    "src/selectionBehavior.ts",
     "src/settings.ts",
     "src/categoryConverter.ts",
-    "src/tooltipServiceWrapper.ts",
     "src/visual.ts"
   ]
 }

@@ -54,7 +54,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                 !dataView.categorical.categories ||
                 !dataView.categorical.categories[0] ||
                 !dataView.categorical.categories[0].source) {
-                return;
+                return [];
             }
 
             const categoryFormats = [visualSettings.fromSensor, visualSettings.toSensor];
@@ -71,52 +71,6 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
                                    table: c.source.queryName.substr(0, c.source.queryName.indexOf('.'))
                                 }
                            });  
-        }
-
-        public static ConvertTableToModel(dv: DataView[], host: IVisualHost): SlicerMapModel[] {
-            let viewModel: SlicerMapModel[] = [];
-
-            if (!dv || !dv[0] || !dv[0].table || !dv[0].table.columns || !dv[0].table.rows) {
-                return viewModel;
-            }
-
-            const { columns, rows } = dv[0].table;
-            let columnIndexes: any = columns.map(c => { return { ...c.roles, index: c.index, fieldName: c.displayName }; });
-
-            const identities = this.getSelectionIds(dv[0], host);
-
-            viewModel = rows.map(function (row, idx) {
-                let data = {}
-                let dataLabels = new DataLabel();
-                ColumnView.toArray().forEach(columnName => {
-                    var col = columnIndexes.find(x => x[columnName]);
-                    if (col) {
-                        data[columnName] = row[col.index];
-
-                        dataLabels.push({
-                            columnName: columnName,
-                            fieldName: col.fieldName,
-                            value: row[col.index]
-                        });
-                    }
-                });
-
-                data['dataLabels'] = dataLabels;
-
-
-                const categoryColumn: DataViewCategoryColumn = {
-                    source: dv[0].table.columns[1],
-                    values: null,
-                    identity: [dv[0].table.identity[idx]]
-                };
-
-
-                data['selectionId'] = identities[idx];
-
-                return data as SlicerMapModel;
-            })
-            
-            return viewModel;
         }
 
         public static getSelectionIds(dataView: DataView, host: IVisualHost): ISelectionId[] {
