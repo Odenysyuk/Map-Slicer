@@ -84,8 +84,7 @@ module powerbi.extensibility.visual {
 
         private drawMap(options: VisualUpdateOptions) {        
             const height = options.viewport.height;
-
-            debugger;
+            
             try {
                 const dataView = options && options.dataViews && options.dataViews[0];
                 this.nodeModels = ConverterHelper.Convert(dataView, this.host);

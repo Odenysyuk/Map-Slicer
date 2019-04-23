@@ -18,6 +18,7 @@ module powerbi.extensibility.visual {
         private categoryNames: CategoryModel[] = [];
         private filterDictionary: { [key: string]: PrimitiveValue[] }
         private filterTarget: IFilterColumnTarget[];
+        private containerFilter: d3.Selection<HTMLElement>;
         private rowContainer: d3.Selection<HTMLElement>;
 
         constructor(host: IVisualHost, rootElement: HTMLElement, containerFilter: d3.Selection<HTMLElement>) {
@@ -29,6 +30,7 @@ module powerbi.extensibility.visual {
             this.sensorNodeModels = [];
             this.filterDictionary = {};
             this.filterTarget = [];
+            this.containerFilter = containerFilter;
             this.rowContainer = containerFilter
                 .append('div')
                 .classed('row', true);
@@ -62,7 +64,6 @@ module powerbi.extensibility.visual {
 
         public drawMap(categoryNames: CategoryModel[], data: NodeModel[], format: VisualSettings, jsonFilter?: IFilter[]) {
 
-            debugger;
             if (this.isCategoryNameUpdates(categoryNames)) {
                 const basicFilters = jsonFilter as ISliceFilter[];   
                 this.filterTarget = [];
@@ -186,6 +187,8 @@ module powerbi.extensibility.visual {
                 }
             });
 
+            debugger;
+            this.rowContainer.style('width').slice(0, -2)
             let columnFilter = this.rowContainer
                 .select(`div#${categoryName}.col`);
 
@@ -204,7 +207,6 @@ module powerbi.extensibility.visual {
                 .append("li")
                 .classed('list-group-item list-group-item-action', true)
                 .on("click", function (c) {
-                    debugger;
                     removeSensorFromfilter(c.sensorName, c.categoryName);
                     this.remove();
                 })
@@ -240,6 +242,7 @@ module powerbi.extensibility.visual {
         }
 
         private drawContainerFilter() {
+            let containerHeight = this.containerFilter.style('height').slice(0, -2);
             this.rowContainer.html('');
             let column = this.rowContainer
                 .selectAll('div')
@@ -249,7 +252,8 @@ module powerbi.extensibility.visual {
                 .classed('col', true)
                 .attr('id', function (d) {
                     return d.name;
-                });
+                })
+                .style("height", containerHeight + 'px');  
 
             let header = column
                 .append("div")

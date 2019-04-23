@@ -32260,6 +32260,7 @@ var powerbi;
                         this.sensorNodeModels = [];
                         this.filterDictionary = {};
                         this.filterTarget = [];
+                        this.containerFilter = containerFilter;
                         this.rowContainer = containerFilter
                             .append('div')
                             .classed('row', true);
@@ -32287,7 +32288,6 @@ var powerbi;
                     };
                     BingMapController.prototype.drawMap = function (categoryNames, data, format, jsonFilter) {
                         var _this = this;
-                        debugger;
                         if (this.isCategoryNameUpdates(categoryNames)) {
                             var basicFilters = jsonFilter;
                             this.filterTarget = [];
@@ -32441,6 +32441,8 @@ var powerbi;
                                 categoryName: categoryName
                             };
                         });
+                        debugger;
+                        this.rowContainer.style('width').slice(0, -2);
                         var columnFilter = this.rowContainer
                             .select("div#" + categoryName + ".col");
                         columnFilter.select("ul").remove();
@@ -32455,7 +32457,6 @@ var powerbi;
                             .append("li")
                             .classed('list-group-item list-group-item-action', true)
                             .on("click", function (c) {
-                            debugger;
                             removeSensorFromfilter(c.sensorName, c.categoryName);
                             this.remove();
                         })
@@ -32482,6 +32483,7 @@ var powerbi;
                         this.filterData();
                     };
                     BingMapController.prototype.drawContainerFilter = function () {
+                        var containerHeight = this.containerFilter.style('height').slice(0, -2);
                         this.rowContainer.html('');
                         var column = this.rowContainer
                             .selectAll('div')
@@ -32491,7 +32493,8 @@ var powerbi;
                             .classed('col', true)
                             .attr('id', function (d) {
                             return d.name;
-                        });
+                        })
+                            .style("height", containerHeight + 'px');
                         var header = column
                             .append("div")
                             .classed('card', true)
@@ -33120,7 +33123,6 @@ var powerbi;
                     };
                     Visual.prototype.drawMap = function (options) {
                         var height = options.viewport.height;
-                        debugger;
                         try {
                             var dataView = options && options.dataViews && options.dataViews[0];
                             this.nodeModels = mapSlicerB1146AB518024EEF8B19C181A7ECC49E.ConverterHelper.Convert(dataView, this.host);
@@ -33165,8 +33167,8 @@ var powerbi;
     (function (visuals) {
         var plugins;
         (function (plugins) {
-            plugins.mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG = {
-                name: 'mapSlicerB1146AB518024EEF8B19C181A7ECC49E_DEBUG',
+            plugins.mapSlicerB1146AB518024EEF8B19C181A7ECC49E = {
+                name: 'mapSlicerB1146AB518024EEF8B19C181A7ECC49E',
                 displayName: 'Map slicer',
                 class: 'Visual',
                 version: '1.0.0',

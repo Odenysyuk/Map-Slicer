@@ -84,8 +84,7 @@ module powerbi.extensibility.visual.mapSlicerB1146AB518024EEF8B19C181A7ECC49E  {
 
         private drawMap(options: VisualUpdateOptions) {        
             const height = options.viewport.height;
-
-            debugger;
+            
             try {
                 const dataView = options && options.dataViews && options.dataViews[0];
                 this.nodeModels = ConverterHelper.Convert(dataView, this.host);
